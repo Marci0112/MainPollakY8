@@ -1,0 +1,246 @@
+<!-- <?php
+session_start();
+
+// Ellenőrizzük, hogy a felhasználó be van-e jelentkezve
+if (!isset($_SESSION['user'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Adatbázis kapcsolat
+$conn = new mysqli("localhost", "root", "", "login_db");
+if ($conn->connect_error) {
+    die("Kapcsolati hiba: " . $conn->connect_error);
+}
+
+// Felhasználó adatainak lekérdezése
+$user_email = $_SESSION['user'];
+$result = $conn->query("SELECT email, points FROM users WHERE email='$user_email'");
+$user = $result->fetch_assoc();
+
+// Pontszám frissítése AJAX kérés esetén
+if (isset($_POST['update_points'])) {
+    $new_points = (int)$_POST['points'];
+    $conn->query("UPDATE users SET points = points + $new_points WHERE email='$user_email'");
+    $updated_points = $user['points'] + $new_points;
+    echo json_encode(['success' => true, 'total_points' => $updated_points]);
+    $conn->close();
+    exit();
+}
+
+$conn->close();
+?> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slider Stacking Game</title>
+    <style>
+        :root {
+            --width: 400px;
+            --game-height: 500px;
+        }
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+        }
+        .game {
+            width: 500px;
+            height: var(--game-height);
+            margin: 20px;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        button {
+            font-size: 1.5rem;
+            padding: 0.5rem 2rem;
+            border: none;
+            border-radius: 5px;
+            margin: 1rem auto;
+            display: block;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #btn {
+            background-color: #28a745;
+            color: white;
+        }
+        #btn:hover {
+            background-color: #218838;
+        }
+        #btn:active {
+            background-color: #1e7e34;
+        }
+        #restart {
+            background-color: #ff9500;
+            color: white;
+            display: none;
+        }
+        #restart:hover {
+            background-color: #e68a00;
+        }
+        #restart:active {
+            background-color: #cc7a00;
+        }
+        .slider {
+            visibility: hidden;
+            background-color: #ff4d4d;
+            height: 20px;
+            width: 100px;
+            position: absolute;
+            border-radius: 3px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .slider1 {
+            visibility: visible;
+            bottom: 0;
+        }
+        .animate {
+            animation: side 4s infinite linear;
+        }
+        @keyframes side {
+            0% { left: 0px; }
+            50% { left: var(--width); }
+            100% { left: 0px; }
+        }
+        .score-display {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="game">
+        <div class="slider slider25 animate" id="slider25" style="bottom: 480px;"></div>
+        <div class="slider slider24 animate" id="slider24" style="bottom: 460px;"></div>
+        <div class="slider slider23 animate" id="slider23" style="bottom: 440px;"></div>
+        <div class="slider slider22 animate" id="slider22" style="bottom: 420px;"></div>
+        <div class="slider slider21 animate" id="slider21" style="bottom: 400px;"></div>
+        <div class="slider slider20 animate" id="slider20" style="bottom: 380px;"></div>
+        <div class="slider slider19 animate" id="slider19" style="bottom: 360px;"></div>
+        <div class="slider slider18 animate" id="slider18" style="bottom: 340px;"></div>
+        <div class="slider slider17 animate" id="slider17" style="bottom: 320px;"></div>
+        <div class="slider slider16 animate" id="slider16" style="bottom: 300px;"></div>
+        <div class="slider slider15 animate" id="slider15" style="bottom: 280px;"></div>
+        <div class="slider slider14 animate" id="slider14" style="bottom: 260px;"></div>
+        <div class="slider slider13 animate" id="slider13" style="bottom: 240px;"></div>
+        <div class="slider slider12 animate" id="slider12" style="bottom: 220px;"></div>
+        <div class="slider slider11 animate" id="slider11" style="bottom: 200px;"></div>
+        <div class="slider slider10 animate" id="slider10" style="bottom: 180px;"></div>
+        <div class="slider slider9 animate" id="slider9" style="bottom: 160px;"></div>
+        <div class="slider slider8 animate" id="slider8" style="bottom: 140px;"></div>
+        <div class="slider slider7 animate" id="slider7" style="bottom: 120px;"></div>
+        <div class="slider slider6 animate" id="slider6" style="bottom: 100px;"></div>
+        <div class="slider slider5 animate" id="slider5" style="bottom: 80px;"></div>
+        <div class="slider slider4 animate" id="slider4" style="bottom: 60px;"></div>
+        <div class="slider slider3 animate" id="slider3" style="bottom: 40px;"></div>
+        <div class="slider slider2 animate" id="slider2" style="bottom: 20px;"></div>
+        <div class="slider slider1" id="slider1" style="bottom: 0px;"></div>
+    </div>
+    <button onclick="stopSliding('slider1', 'slider2', 'slider1')" id="btn">Stop!</button>
+    <button id="restart" onclick="location.reload()">Restart</button>
+    <div class="score-display">Score: <span id="score">0</span></div>
+
+    <script>
+        var gameWidth = 400;
+        var counter = 2;
+        var score = 0;
+
+        function updatePoints(points) {
+            fetch(window.location.href, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: "update_points=1&points=" + points
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log("Pontszám frissítve: " + data.total_points);
+                }
+            })
+            .catch(error => console.error("Hiba:", error));
+        }
+
+        function stopSliding(slider1, slider2, sliderB4) {
+            var btn = document.getElementById("btn");
+            var slider1 = document.getElementById(slider1);
+            var slider2 = document.getElementById(slider2);
+            var sliderB4 = document.getElementById(sliderB4);
+            var left = window.getComputedStyle(slider1).getPropertyValue("left");
+            slider1.classList.remove("animate");
+            slider1.style.left = left;
+
+            var width = parseFloat(window.getComputedStyle(slider1).getPropertyValue("width"));
+            var left1 = parseFloat(window.getComputedStyle(slider1).getPropertyValue("left"));
+            var left2 = parseFloat(window.getComputedStyle(sliderB4).getPropertyValue("left"));
+            var difference = left1 - left2;
+            var absDifference = Math.abs(left1 - left2);
+
+            // Ha pontosan egymáson van (különbség kisebb, mint 5px), pontot kap
+            if (absDifference <= 5) {
+                score++;
+                document.getElementById("score").innerText = score;
+                updatePoints(1); // 1 pont az adatbázisba
+            }
+
+            // Ha a különbség túl nagy, vége a játéknak
+            if (difference > width || difference < -width) {
+                document.getElementById("restart").style.display = "block";
+                btn.setAttribute("onclick", "");
+                alert("Game Over! Score: " + score);
+                return;
+            }
+
+            var offset = width - absDifference;
+            var px = "px";
+            var offstring = offset.toString();
+            var theWidth = offstring.concat(px);
+
+            var str1 = "stopSliding('slider";
+            var str2 = counter;
+            var str3 = "','slider";
+            var str4 = counter + 1;
+            var str5 = "','slider";
+            var str6 = counter - 1;
+            var str7 = "')";
+            var str8 = str1.concat(str2, str3, str4, str5, str6, str7);
+            btn.setAttribute("onclick", str8);
+
+            if (difference > 0) {
+                var newleft = left1 + absDifference;
+            } else {
+                var newleft = left1 - difference;
+            }
+            var theleft = newleft.toString();
+            var newnewleft = theleft.concat(px);
+            slider1.style.width = theWidth;
+            if (difference < 0) {
+                slider1.style.left = newnewleft;
+            }
+            slider2.style.width = theWidth;
+            slider2.style.visibility = "visible";
+            gameWidth = gameWidth + absDifference;
+            document.documentElement.style.setProperty('--width', gameWidth + "px");
+            counter++;
+        }
+    </script>
+</body>
+</html>

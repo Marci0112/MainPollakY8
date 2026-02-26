@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="amoba.css">
+    <style>
+        table{
+            margin:auto;
+            position: relative;
+            
+            border-collapse: collapse;
+        }
+        td{
+            height: 70px;
+            width: 70px;
+            border: 1px black solid;
+            text-align: center;
+            font-size: 32pt;
+            
+        }
+        div{
+            width: fit-content;
+            margin: auto;
+        }
+        #playAgainBTN {
+            margin-top: 50px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        
+        
+        
+    </style>
+</head>
+<body>
+
+    <h4>A pontok újratöltéséhez töltsd újra a weblapot, vagy nyomd meg az f5 billentyűt</h4>
+
+    <h3 id="xWinner"></h3>
+    <h3 id="draws"></h3>
+    <h3 id="oWinner"></h3>
+    <div class="box" id="box">
+        <form id="adatokForm">
+            
+            <h2>Válaszd ki a pálya nagyságát:</h2>
+            <select name="palyanagysag" id="palyanagysag">
+                <option value="3">3×3</option>
+                <option value="6">6x6</option>
+                <option value="9">9x9</option>
+            </select>
+            <br><br>
+    
+            <h2>Játékos mód:</h2>
+            <select name="ellenfelfajta" id="ellenfelfajta">
+                <option value="0">Játékos</option>
+                <option value="1">Gép</option>
+            </select>
+            <br><br>
+    
+            <button type="button" onclick="mentes()">Tovább</button>
+        </form>
+        </div>
+        
+    
+    <table id="tabla">
+        
+    </table>
+    
+    <div id="playAgainBTN" ><button onclick="playAgain()">Play again</button></div>
+    <h1 id="winner" style="text-align: center;"></h1>
+    <script>
+        const button = document.getElementById("playAgainBTN");
+        button.style.marginTop = 50 + "px";
+       
+        
+    </script>
+    <script>
+        var palya = 0;
+        var forWin = 0;
+        var playAgainBTN = document.getElementById("playAgainBTN");
+        var adatok = {};
+        var x = document.getElementById(adatokForm);
+        
+        function mentes() {
+            const palyanagysag = document.getElementById('palyanagysag').value;
+            const ellenfelfajta = document.getElementById('ellenfelfajta').value;
+            adatok = {
+                palyanagysag: palyanagysag,
+                ellenfelfajta: ellenfelfajta
+            };
+            palyameret(adatok.palyanagysag);
+            document.getElementById("box").style.display = "none";
+        }
+    
+        playAgainBTN.innerHTML = "";
+        function palyameret(meret) {
+            palya = parseInt(meret);
+            switch (palya) {
+                case 3: forWin = 3; break;
+                case 6: forWin = 4; break;
+                case 9: forWin = 5; break;
+            }
+            xWinner = 0;
+            oWinner = 0;
+            drawCount = 0; // Reset draw count
+            const isComputer = adatok.ellenfelfajta === "1";
+            xWinnerElement.innerHTML = `${isComputer ? 'Player' : 'Player X'}: ${xWinner}`;
+            oWinnerElement.innerHTML = `${isComputer ? 'Computer' : 'Player O'}: ${oWinner}`;
+            drawsElement.innerHTML = `Draws: ${drawCount}`; // Update draws display
+            playAgainBTN.innerHTML = "<button onclick='playAgain()'>Play again</button>";
+            playAgain();
+        }
+        
+    
+        var turns = "X";
+        const winner = document.getElementById("winner");
+        var haveWinner = false;
+        var rounds = 0;
+        var xWinner = 0;
+        var oWinner = 0;
+        var xWinnerElement = document.getElementById("xWinner");
+        var oWinnerElement = document.getElementById("oWinner");
+        xWinnerElement.innerHTML = `X: ${xWinner}`;
+        oWinnerElement.innerHTML = `O: ${oWinner}`;
+        var drawCount = 0;
+        var drawsElement = document.getElementById("draws");
+        drawsElement.innerHTML = `Draws: ${drawCount}`;
+
+
+        const tableElement = document.getElementById("tabla");
+        let tabla = [];
+    
+        function kattintos(event, y, x) {
+            if (tabla[y][x] != null) return;
+        
+            if (!haveWinner) {
+                if (event.innerHTML === "") {
+                    tabla[y][x] = turns;
+                }
+        
+                if (checkWin(y, x, turns)) {
+                    winner.innerHTML = `${turns} WINS`;
+                    haveWinner = true;
+                    if (turns == "X") {
+                        xWinner++;
+                        event.innerHTML = "X";
+                    } else {
+                        oWinner++;
+                        event.innerHTML = "O";
+                    }
+                    xWinnerElement.innerHTML = `${adatok.ellenfelfajta === '1' ? 'Player' : 'Player X'}: ${xWinner}`;
+                    oWinnerElement.innerHTML = `${adatok.ellenfelfajta === '1' ? 'Computer' : 'Player O'}: ${oWinner}`;
+                    return;
+                }
+        
+                if (turns == "X") {
+                    event.innerHTML = "X";
+                    turns = "O";
+                } else {
+                    event.innerHTML = "O";
+                    turns = "X";
+                }
+                rounds++;
+        
+                if (rounds === Math.pow(palya, 2)) {
+                    winner.innerHTML = "Draw";
+                    haveWinner = true;
+                    drawCount++; // Döntetlen számláló növelése
+                    drawsElement.innerHTML = `Draws: ${drawCount}`; // Kijelzés frissítése
+                }
+        
+                if (adatok.ellenfelfajta === "1" && turns === "O" && !haveWinner) {
+                    setTimeout(makeAIMove, 100);
+                }
+            }
+        }
+    
+        function checkWin(y, x, player) {
+            let sorcounter = 1, oszlopcounter = 1, atlocounter1 = 1, atlocounter2 = 1;
+            const size = palya;
+    
+            // Sor ellenőrzés
+            for (let i = x - 1; i >= 0 && tabla[y][i] === player; i--) sorcounter++;
+            for (let i = x + 1; i < size && tabla[y][i] === player; i++) sorcounter++;
+    
+            // Oszlop ellenőrzés
+            for (let i = y - 1; i >= 0 && tabla[i][x] === player; i--) oszlopcounter++;
+            for (let i = y + 1; i < size && tabla[i][x] === player; i++) oszlopcounter++;
+    
+            // Főátló ellenőrzés
+            for (let i = x - 1, j = y - 1; i >= 0 && j >= 0 && tabla[j][i] === player; i--, j--) atlocounter1++;
+            for (let i = x + 1, j = y + 1; i < size && j < size && tabla[j][i] === player; i++, j++) atlocounter1++;
+    
+            // Mellékátló ellenőrzés
+            for (let i = x + 1, j = y - 1; i < size && j >= 0 && tabla[j][i] === player; i++, j--) atlocounter2++;
+            for (let i = x - 1, j = y + 1; i >= 0 && j < size && tabla[j][i] === player; i--, j++) atlocounter2++;
+    
+            return sorcounter >= forWin || oszlopcounter >= forWin || atlocounter1 >= forWin || atlocounter2 >= forWin;
+        }
+    
+        function findWinningMove(player) {
+            for (let y = 0; y < palya; y++) {
+                for (let x = 0; x < palya; x++) {
+                    if (tabla[y][x] === null) {
+                        tabla[y][x] = player;
+                        const win = checkWin(y, x, player);
+                        tabla[y][x] = null;
+                        if (win) return { y, x };
+                    }
+                }
+            }
+            return null;
+        }
+    
+        function findPotentialThreat(player, requiredLength) {
+            const threats = [];
+            const size = palya;
+            
+            // Vízszintes ellenőrzés
+            for(let y = 0; y < size; y++) {
+                for(let x = 0; x <= size - requiredLength; x++) {
+                    let count = 0;
+                    let emptySpot = -1;
+                    for(let i = 0; i < requiredLength; i++) {
+                        if(tabla[y][x+i] === player) count++;
+                        else if(tabla[y][x+i] === null) emptySpot = x+i;
+                    }
+                    if(count === requiredLength-1 && emptySpot !== -1) {
+                        threats.push({y: y, x: emptySpot});
+                    }
+                }
+            }
+    
+            // Függőleges ellenőrzés
+            for(let x = 0; x < size; x++) {
+                for(let y = 0; y <= size - requiredLength; y++) {
+                    let count = 0;
+                    let emptySpot = -1;
+                    for(let i = 0; i < requiredLength; i++) {
+                        if(tabla[y+i][x] === player) count++;
+                        else if(tabla[y+i][x] === null) emptySpot = y+i;
+                    }
+                    if(count === requiredLength-1 && emptySpot !== -1) {
+                        threats.push({y: emptySpot, x: x});
+                    }
+                }
+            }
+    
+            // Átlók ellenőrzése
+            for(let y = 0; y <= size - requiredLength; y++) {
+                for(let x = 0; x <= size - requiredLength; x++) {
+                    let count = 0;
+                    let emptySpot = -1;
+                    // Főátló
+                    for(let i = 0; i < requiredLength; i++) {
+                        if(tabla[y+i][x+i] === player) count++;
+                        else if(tabla[y+i][x+i] === null) emptySpot = {y: y+i, x: x+i};
+                    }
+                    if(count === requiredLength-1 && emptySpot !== -1) {
+                        threats.push(emptySpot);
+                    }
+    
+                    // Mellékátló
+                    count = 0;
+                    emptySpot = -1;
+                    for(let i = 0; i < requiredLength; i++) {
+                        if(tabla[y+i][x+(requiredLength-1)-i] === player) count++;
+                        else if(tabla[y+i][x+(requiredLength-1)-i] === null) emptySpot = {y: y+i, x: x+(requiredLength-1)-i};
+                    }
+                    if(count === requiredLength-1 && emptySpot !== -1) {
+                        threats.push(emptySpot);
+                    }
+                }
+            }
+    
+            return threats.length > 0 ? threats[Math.floor(Math.random()*threats.length)] : null;
+        }
+    
+        function makeAIMove() {
+            // 1. Próbálj meg nyerni
+            let move = findWinningMove('O');
+            
+            // 2. Blokkolj azonnali győzelmet
+            if(!move) move = findWinningMove('X');
+            
+            // 3. Korai blokkolás nagyobb táblákon
+            if(!move) {
+                let requiredLength = 3; // Alapértelmezett 6x6-hoz
+                if(palya === 9) requiredLength = 4; // 9x9-hez
+                
+                move = findPotentialThreat('X', requiredLength);
+            }
+            
+            // 4. Véletlenszerű lépés
+            if(!move) {
+                const empty = [];
+                for(let y = 0; y < palya; y++) {
+                    for(let x = 0; x < palya; x++) {
+                        if(tabla[y][x] === null) empty.push({y, x});
+                    }
+                }
+                if(empty.length === 0) return;
+                move = empty[Math.floor(Math.random()*empty.length)];
+            }
+            
+            const cell = tableElement.rows[move.y].cells[move.x];
+            kattintos(cell, move.y, move.x);
+        }
+    
+        function playAgain() {
+            tabla = [];
+            tableElement.innerHTML = "";
+            for (let i = 0; i < palya; i++) {
+                tabla.push([]);
+                const tr = document.createElement("tr");
+                for (let j = 0; j < palya; j++) {
+                    tabla[i][j] = null;
+                    const td = document.createElement("td");
+                    td.className = "grid";
+                    td.addEventListener("click", (function(y, x) {
+                        return function() { kattintos(this, y, x); };
+                    })(i, j));
+                    tr.appendChild(td);
+                }
+                tableElement.appendChild(tr);
+            }
+            turns = "X";
+            rounds = 0;
+            winner.innerHTML = "";
+            haveWinner = false;
+            // Removed: drawCount = 0;
+            // Removed: drawsElement.innerHTML = `Draws: ${drawCount}`;
+        }
+    </script>
+ 
+    
+    <!-- if (rounds === Math.pow(palya, 2)) {
+        winner.innerHTML = "Draw";
+        haveWinner = true;
+        drawCount++; // Increment draw count
+        drawsElement.innerHTML = `Draws: ${drawCount}`; // Update draws display
+    }
+     -->
+</body>
+</html>

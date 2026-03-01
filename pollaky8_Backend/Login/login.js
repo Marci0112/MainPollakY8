@@ -1,12 +1,16 @@
-function login(event) {
-  console.log(event);
-  event.preventDefault();
+// Login form submit kezelése
+document
+  .getElementById("loginForm")
+  .addEventListener("submit", function (event) {
+    event.preventDefault();
 
-  const username = event.target.elements[0].value;
-  const password = event.target.elements[1].value;
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
 
-  if (username === "admin" && password == "admin") {
-    localStorage.setItem("loggedIn", true);
-    location.replace("../../pollaky8_Frontend/login.html");
-  }
-}
+    if (username === "admin" && password === "admin") {
+      localStorage.setItem("loggedIn", true);
+      location.replace("./index.html");
+    } else {
+      alert("Hibás felhasználónév vagy jelszó!");
+    }
+  });

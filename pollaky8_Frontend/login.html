@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/login.css" />
     <script>
       const loggedInState = localStorage.getItem("loggedIn");
-      if (loggedInState) location.replace("/index.html");
+      if (loggedInState) location.replace("./index.html");
     </script>
   </head>
   <body>
@@ -97,6 +97,7 @@
       </div>
     </div>
 
+    <script src="../pollaky8_Backend/Login/login.js"></script>
     <script>
       const loginText = document.querySelector(".title-text .login");
       const loginForm = document.querySelector("form.login");
@@ -107,20 +108,7 @@
       const error = document.getElementById("error_msg");
       const sBtn = document.getElementById("sBtn");
 
-      // Login form submit kezelése
-      document.getElementById("loginForm").addEventListener("submit", function(event) {
-        event.preventDefault();
 
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value;
-
-        if (username === "admin" && password === "admin") {
-          localStorage.setItem("loggedIn", true);
-          location.replace("./index.html");
-        } else {
-          alert("Hibás felhasználónév vagy jelszó!");
-        }
-      });
 
       // Login/Signup tab váltás
       signupBtn.onclick = () => {

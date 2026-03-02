@@ -2,6 +2,7 @@ document
   .getElementById("signupFrom")
   .addEventListener("submit", async function (event) {
     event.preventDefault();
+    console.log("SUBMIT LEFUTOTT");
     const loginBtn = document.querySelector("label.login");
     const username = document.getElementById("SignUpUsername").value.trim();
     const password = document.getElementById("SignUpPassword").value;
@@ -21,7 +22,7 @@ document
       error.innerText = "Sikeres regisztráció! Most jelentkezz be!";
       document.getElementById("SignUpUsername").value = "";
       document.getElementById("SignUpPassword").value = "";
-      setTimeout(() => loginBtn.click(), 2000);
+      setTimeout(() => loginBtn.click(), 15000);
     } else {
       error.style.color = "red";
       error.style.display = "block";

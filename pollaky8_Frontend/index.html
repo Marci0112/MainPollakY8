@@ -1,37 +1,3 @@
-<!-- <?php
-session_start();
-
-// Ellenőrizzük, hogy a felhasználó be van-e jelentkezve
-if (!isset($_SESSION['user'])) {
-    header("Location: login.php"); // Ha nincs bejelentkezve, vissza a login oldalra
-    exit();
-}
-
-// Adatbázis kapcsolat
-$conn = new mysqli("localhost", "root", "", "login_db");
-if ($conn->connect_error) {
-    die("Kapcsolati hiba: " . $conn->connect_error);
-}
-
-// Felhasználó adatainak lekérdezése
-$user_email = $_SESSION['user'];
-$result = $conn->query("SELECT email, points FROM users WHERE email='$user_email'");
-$user = $result->fetch_assoc();
-
-// Pontszám frissítése (ezt a játékok hívják meg)
-if (isset($_POST['update_points'])) {
-    $new_points = (int)$_POST['points'];
-    $conn->query("UPDATE users SET points = points + $new_points WHERE email='$user_email'");
-    echo json_encode(['success' => true, 'total_points' => $user['points'] + $new_points]);
-    exit();
-}
-
-$conn->close();
-
-// A játék tartalmát a konkrét oldal állítja be
-$game_content = isset($game_content) ? $game_content : "<p>Válassz egy játékot!</p>";
-?> -->
-
 <!doctype html>
 <html lang="hu">
   <head>
@@ -61,12 +27,27 @@ $game_content = isset($game_content) ? $game_content : "<p>Válassz egy játéko
     <header>
       <div>
         <div class="user-info">
-          Felhasználó:
-          <span id="total-points"> </span>
+          <span id="welcomeText">
+            <script>
+              const username = localStorage.getItem("username");
+              if (username) {
+                document.getElementById("welcomeText").innerText =
+                  `Felhasználó: ${username}`;
+              }
+            </script>
+          </span>
         </div>
         <div class="game-area">
           <div class="points-display">
-            Aktuális pontjaid: <span id="current-points"> </span>
+            <span id="current-points">
+              <script>
+                const points = localStorage.getItem("points");
+                if (points) {
+                  document.getElementById("current-points").innerText =
+                    `Aktuális pontjaid: ${points}`;
+                }
+              </script>
+            </span>
           </div>
         </div>
       </div>

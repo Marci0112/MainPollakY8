@@ -9,13 +9,15 @@ document
     const res = await fetch("http://localhost:5000/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password}),
     });
 
     const data = await res.json();
 
     if (data.success) {
       localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("username", data.username); // ← elmentve
+      localStorage.setItem("points", data.points); // ← elmentve
       window.location.href = "./index.html";
     } else {
       loginErrorMsg.style.color = "red";

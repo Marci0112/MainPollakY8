@@ -6,6 +6,7 @@ document
     const loginBtn = document.querySelector("label.login");
     const username = document.getElementById("SignUpUsername").value.trim();
     const password = document.getElementById("SignUpPassword").value;
+    const cpass = document.getElementById("cpass").value
     const error = document.getElementById("error_msg");
 
     const res = await fetch("http://localhost:5000/api/register", {
@@ -22,7 +23,15 @@ document
       error.innerText = "Sikeres regisztráció! Most jelentkezz be!";
       document.getElementById("SignUpUsername").value = "";
       document.getElementById("SignUpPassword").value = "";
-      setTimeout(() => loginBtn.click(), 15000);
+    document.getElementById("cpass").value = "";
+      console.log("loginBtn:", loginBtn);
+      console.log("setTimeout beállítva");
+      setTimeout(() => {
+        document.getElementById("login").click();
+        // manuálisan triggereld a CSS animációt is:
+        document.querySelector("form.login").style.marginLeft = "0%";
+        document.querySelector(".title-text .login").style.marginLeft = "0%";
+      }, 1000);
     } else {
       error.style.color = "red";
       error.style.display = "block";

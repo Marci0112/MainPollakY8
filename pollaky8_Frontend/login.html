@@ -13,15 +13,15 @@
   <body>
     <div class="wrapper">
       <div class="title-text">
-        <div class="title login">Login Form</div>
-        <div class="title signup">Signup Form</div>
+        <div class="title login">Bejelentkezés</div>
+        <div class="title signup">Regisztráció</div>
       </div>
       <div class="form-container">
         <div class="slide-controls">
           <input type="radio" name="slide" id="login" checked />
           <input type="radio" name="slide" id="signup" />
-          <label for="login" class="slide login">Login</label>
-          <label for="signup" class="slide signup">Signup</label>
+          <label for="login" class="slide login">Bejelentkezés</label>
+          <label for="signup" class="slide signup">Regisztráció</label>
           <div class="slider-tab"></div>
         </div>
         <div class="form-inner">
@@ -30,8 +30,8 @@
               <input
                 type="text"
                 name="username"
-                id="username"
-                placeholder="Email Address"
+                id="LoginUsername"
+                placeholder="Felhasználónév"
                 required
               />
             </div>
@@ -39,36 +39,40 @@
               <input
                 type="password"
                 name="password"
-                id="password"
-                placeholder="Password"
+                id="LoginPassword"
+                placeholder="Jelszó"
                 required
               />
             </div>
-            <div class="pass-link"><a href="#">Forgot password?</a></div>
+            <div class="pass-link">
+              <a href="#">Elfelejtetted a jelszavad?</a>
+            </div>
+            <span style="display: none" id="login_error_msg"></span>
             <div class="field btn">
               <div class="btn-layer"></div>
-              <!-- name="login" ELTÁVOLÍTVA - ez írta felül a login() függvényt! -->
-              <input type="submit" value="Login" />
+              <input type="submit" value="Jelentkezz be" />
             </div>
             <div class="signup-link">
-              Not a member? <a href="#">Signup now</a>
+              <span>Nincs fiókod?</span>
+              <a href="#" class="signup-link">Regisztrálj</a>
             </div>
           </form>
-          <form action="" class="signup">
+          <form action="" class="signup" id="signupFrom">
             <div class="field">
               <input
-                type="email"
-                name="email"
-                placeholder="Email Address"
+                type="text"
+                id="SignUpUsername"
+                name="username"
+                placeholder="Felhasználónév"
                 required
               />
             </div>
             <div class="field">
               <input
                 type="password"
-                id="pass"
+                id="SignUpPassword"
                 name="password"
-                placeholder="Password"
+                placeholder="Jelszó"
                 required
               />
             </div>
@@ -77,7 +81,7 @@
                 type="password"
                 id="cpass"
                 name="confirm_password"
-                placeholder="Confirm password"
+                placeholder="Erősítsd meg a jelszavad!"
                 required
               />
             </div>
@@ -88,7 +92,7 @@
                 type="submit"
                 id="sBtn"
                 name="signup"
-                value="Signup"
+                value="Regisztrálj"
                 disabled
               />
             </div>
@@ -97,44 +101,82 @@
       </div>
     </div>
 
-    <script src="../pollaky8_Backend/Login/login.js"></script>
+    <script src="../pollaky8_Backend/LoginAndRegist/login.js"></script>
+    <script src="../pollaky8_Backend/LoginAndRegist/regist.js"></script>
     <script>
       const loginText = document.querySelector(".title-text .login");
       const loginForm = document.querySelector("form.login");
       const loginBtn = document.querySelector("label.login");
       const signupBtn = document.querySelector("label.signup");
-      const pass = document.getElementById("pass");
+      const signupLink = document.querySelector("form .signup-link a");
+      const signUpNowLink = document.getElementById("signUpNow");
+      const pass = document.getElementById("SignUpPassword");
       const cpass = document.getElementById("cpass");
       const error = document.getElementById("error_msg");
       const sBtn = document.getElementById("sBtn");
-
-
 
       // Login/Signup tab váltás
       signupBtn.onclick = () => {
         loginForm.style.marginLeft = "-50%";
         loginText.style.marginLeft = "-50%";
+        confirmPass();
       };
       loginBtn.onclick = () => {
         loginForm.style.marginLeft = "0%";
         loginText.style.marginLeft = "0%";
+        error.style.display = "none";
+      };
+      signupLink.onclick = () => {
+        signupBtn.click();
+        return false;
+        confirmPass();
       };
 
       // Jelszó megerősítés ellenőrzése
       function confirmPass() {
-        if (pass.value !== cpass.value) {
+        const password = pass.value;
+        const confirmPassword = cpass.value;
+        const errors = [];
+
+        // 1. Hossz ellenőrzés
+        if (password.length < 8) {
+          errors.push("A jelszónak legalább 8 karakter hosszúnak kell lennie");
+        }
+        // 2. Kisbetű
+        if (!/[a-z]/.test(password)) {
+          errors.push("Legalább egy kisbetűt tartalmazzon");
+        }
+        // 3. Nagybetű
+        if (!/[A-Z]/.test(password)) {
+          errors.push("Legalább egy nagybetűt tartalmazzon");
+        }
+
+        // 4. Számjegy
+        if (!/[0-9]/.test(password)) {
+          errors.push("Legalább egy számot tartalmazzon");
+        }
+
+        // 5. Egyezőség ellenőrzése
+        if (password !== confirmPassword) {
+          errors.push("A két jelszó nem egyezik meg");
+        }
+        // Döntés a hibák alapján
+        if (errors.length > 0) {
           error.style.color = "red";
           error.style.display = "block";
-          error.innerText = "A jelszó nem egyezik!";
+          error.innerText = errors.join(" • "); // vagy sortöréssel: errors.join("\n")
           sBtn.disabled = true;
+          sBtn.style.cursor = "default";
         } else {
           error.style.display = "none";
           sBtn.disabled = false;
+          sBtn.style.cursor = "pointer";
         }
       }
 
       pass.addEventListener("keyup", confirmPass);
       cpass.addEventListener("keyup", confirmPass);
+
     </script>
   </body>
 </html>

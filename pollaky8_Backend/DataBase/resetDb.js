@@ -1,5 +1,22 @@
+const path = require("path");
 const Database = require("better-sqlite3");
-const db = new Database("DataBase/database.db"); // ← itt a baj
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
+const dbPathFromEnv = process.env.DB_PATH;
+
+let dbPath;
+
+if (dbPathFromEnv) {
+  dbPath = path.join(__dirname, "..", dbPathFromEnv);
+}else {
+  console.warn(
+    "FIGYELEM: DB_PATH nincs .env-ben → keményen beírt útvonalat használok",
+  );
+  dbPath = path.join(__dirname, "..", "DataBase", "database.db");
+}
+
+const db = new Database(dbPath, {
+  verbose: console.log,
+});
 
 try {
   // 1. Minden sor törlése a táblából

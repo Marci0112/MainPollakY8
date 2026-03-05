@@ -22,6 +22,7 @@
 
       function logout() {
         localStorage.removeItem("loggedIn");
+        localStorage.removeItem("username");
         location.replace("./login.html");
       }
     </script>

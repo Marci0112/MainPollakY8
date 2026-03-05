@@ -7,7 +7,7 @@ let dbPath;
 
 if (dbPathFromEnv) {
   dbPath = path.join(__dirname, "..", dbPathFromEnv);
-}else {
+} else {
   console.warn(
     "FIGYELEM: DB_PATH nincs .env-ben → keményen beírt útvonalat használok",
   );
@@ -20,14 +20,14 @@ const db = new Database(dbPath, {
 
 try {
   // 1. Minden sor törlése a táblából
-  const torles = db.prepare("DELETE FROM szemelyek");
+  const torles = db.prepare("DELETE FROM szemelyek,");
   const toroltSorok = torles.run();
 
   console.log(`Törölt sorok száma: ${toroltSorok.changes}`);
 
   db.exec(`
     DELETE FROM sqlite_sequence 
-    WHERE name = 'szemelyek'
+    WHERE name = 'szemelyek' AND name = 'pontok'
   `);
 
   console.log('A "szemelyek" tábla kiürítve és az ID számláló visszaállítva.');

@@ -1,13 +1,18 @@
 const path = require("path");
 const Database = require("better-sqlite3");
-const dotenv = require('dotenv');
-const dotenvResult = dotenv.config({ path: path.join(__dirname, '..', '.env') });
+const dotenv = require("dotenv");
+const dotenvResult = dotenv.config({
+  path: path.join(__dirname, "..", ".env"),
+});
 
 if (dotenvResult.error) {
-  console.error('HIBA: .env fájl betöltése sikertelen!', dotenvResult.error.message);
+  console.error(
+    "HIBA: .env fájl betöltése sikertelen!",
+    dotenvResult.error.message,
+  );
   // opcionális: process.exit(1);   // ha élesben akarod, hogy leálljon
 } else {
-  console.log('dotenv betöltve ✓');
+  console.log("dotenv betöltve ✓");
 }
 
 const dbPathFromEnv = process.env.DB_PATH;

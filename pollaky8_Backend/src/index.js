@@ -67,11 +67,15 @@ app.post("/api/register", async (req, res) => {
     db.prepare(
       "INSERT INTO szemelyek (username, password_hash) VALUES (?, ?)",
     ).run(username, hash);
-    const user = db
-      .prepare(
-        "SELECT id, username, password_hash FROM szemelyek WHERE username = ?",
-      )
-      .get(username);
+    db.prepare(
+      "SELECT id, username, password_hash FROM szemelyek WHERE username = ?",
+    ).get(username);
+
+    const lastId = db.prepare("SELECT last_insert_rowid() AS id").get().id;
+    db.prepare("INSERT INTO pontok (user_id, snake_points) VALUES (?, ?)").run(
+      lastId,
+      0,
+    );
     res.json({ success: true });
   } catch (err) {
     if (err.message.includes("UNIQUE constraint")) {

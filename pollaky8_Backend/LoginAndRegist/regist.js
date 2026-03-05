@@ -28,7 +28,7 @@ document
       console.log("setTimeout beállítva");
       setTimeout(() => {
         document.getElementById("login").click();
-        // manuálisan triggereld a CSS animációt is:
+        // triggereled a css animációt
         document.querySelector("form.login").style.marginLeft = "0%";
         document.querySelector(".title-text .login").style.marginLeft = "0%";
       }, 1000);

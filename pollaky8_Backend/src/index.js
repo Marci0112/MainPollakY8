@@ -65,8 +65,8 @@ app.post("/api/register", async (req, res) => {
 
   try {
     db.prepare(
-      "INSERT INTO szemelyek (username, password_hash, points) VALUES (?, ?, ?)",
-    ).run(username, hash, 0);
+      "INSERT INTO szemelyek (username, password_hash) VALUES (?, ?)",
+    ).run(username, hash);
     const user = db
       .prepare(
         "SELECT id, username, password_hash, points FROM szemelyek WHERE username = ?",

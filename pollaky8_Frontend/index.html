@@ -7,6 +7,13 @@
       href="https://fonts.googleapis.com/css?family=Pixelify Sans"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <title>Főoldal</title>
     <link rel="stylesheet" href="css/main.css" />
     <link
@@ -41,7 +48,31 @@
                 }
               </script>
             </span>
-            <button class="logout" onclick="logout()">Kijelentkezés</button>
+            <div class="dropDown">
+              <i onclick="DropMenu()" class="fa-solid fa-user logout"></i>
+              <!-- <button class="logout" onclick="logout()">Kijelentkezés</button> -->
+              <script>
+                function DropMenu() {
+                  document.getElementById("Drop").classList.toggle("show");
+                }
+                window.onclick = function (event) {
+                  if (!event.target.matches(".logout")) {
+                    var dropdowns =
+                      document.getElementsByClassName("dropdown-content");
+                    var i;
+                    for (i = 0; i < dropdowns.length; i++) {
+                      var openDropdown = dropdowns[i];
+                      if (openDropdown.classList.contains("show")) {
+                        openDropdown.classList.remove("show");
+                      }
+                    }
+                  }
+                };
+              </script>
+              <div id="Drop" class="dropdown-content">
+                <a href="#">Kijelentkezés</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -182,26 +213,5 @@
       /></a>
       <br />
     </div>
-
-    <script>
-      // Pontszám frissítése AJAX-szal
-      function updatePoints(points) {
-        fetch(window.location.href, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: "update_points=1&points=" + points,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              document.getElementById("current-points").innerText =
-                data.total_points;
-              document.getElementById("total-points").innerText =
-                data.total_points;
-            }
-          })
-          .catch((error) => console.error("Hiba:", error));
-      }
-    </script>
   </body>
 </html>

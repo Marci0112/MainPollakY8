@@ -2,14 +2,28 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
   height: 100vh;
   background: #080b52;
-  background: linear-gradient(0deg, rgba(8, 11, 82, 1) 5%, rgba(0, 178, 255, 1) 100%);
+  background: linear-gradient(
+    0deg,
+    rgba(8, 11, 82, 1) 5%,
+    rgba(0, 178, 255, 1) 100%
+  );
   margin: 0;
 }
 
 * {
   font-family: "Arial", sans-serif;
+}
+
+.cim {
+  color: white;
+  position: absolute;
+  font-size: 100px;
+  top: 70px;
+  font-family: 'Pixelify Sans';
+  text-shadow: 5px 3px #000000;
 }
 
 /* card kezdete ------------------------------------------------------------------------------------------------------*/
@@ -90,7 +104,7 @@ button {
   text-align: center;
   font-size: 17px;
   padding: 16px;
-  width: 130px;
+  width: 150px;
   transition: all 0.5s;
   cursor: pointer;
   margin: 5px;

@@ -16,9 +16,7 @@ body {
 
 .cim {
   color: white;
-  position: absolute;
   font-size: 40px;
-  top: 6px;
   font-family: "Pixelify Sans";
   text-shadow: 5px 3px #000000;
 }
@@ -26,14 +24,12 @@ body {
 /* Felhasználói info */
 .user-info {
   padding: 15px;
-  padding-left: 82vw;
+  display: flex;
+  justify-content: space-between;
   font-size: 1.2em;
   margin-bottom: 20px;
   font-weight: 800;
   color: #ffffff;
-}
-.logout {
-  margin-left: 50px;
 }
 
 /* Játékok listája */
@@ -44,7 +40,9 @@ body {
 a {
   text-decoration: none;
   display: inline-block;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   margin: 10px;
 }
 

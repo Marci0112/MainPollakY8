@@ -43,7 +43,7 @@ app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
   const row = db
-    .prepare("SELECT password_hash, points FROM szemelyek WHERE username = ?")
+    .prepare("SELECT password_hash FROM szemelyek WHERE username = ?")
     .get(username);
 
   if (!row) {
@@ -69,10 +69,9 @@ app.post("/api/register", async (req, res) => {
     ).run(username, hash);
     const user = db
       .prepare(
-        "SELECT id, username, password_hash, points FROM szemelyek WHERE username = ?",
+        "SELECT id, username, password_hash FROM szemelyek WHERE username = ?",
       )
       .get(username);
-    console.log(user.points);
     res.json({ success: true });
   } catch (err) {
     if (err.message.includes("UNIQUE constraint")) {

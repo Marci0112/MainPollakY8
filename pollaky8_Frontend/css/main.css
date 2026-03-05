@@ -5,8 +5,8 @@ body {
   color: #ffffff;
   margin: 0;
   padding: 20px;
-  height: 100vh;
-  width: 100vw;
+  height: 110vh;
+  width: 99vw;
   background: linear-gradient(
     0deg,
     rgba(8, 11, 82, 1) 5%,
@@ -26,7 +26,7 @@ body {
 /* Felhasználói info */
 .user-info {
   padding: 15px;
-  padding-left: 83vw;
+  padding-left: 82vw;
   font-size: 1.2em;
   margin-bottom: 20px;
   font-weight: 800;

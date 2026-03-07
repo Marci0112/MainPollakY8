@@ -29,6 +29,31 @@
 
     <canvas width="400" height="400" id="game"></canvas>
     <script>
+      const username = localStorage.getItem("username");
+      var personalBest = 0;
+
+      // Betöltéskor lekéri a DB-ből a personal bestet
+      async function loadPersonalBest() {
+        if (!username) return;
+        const res = await fetch(
+          `http://localhost:5000/api/snake/points/${username}`,
+        );
+        const data = await res.json();
+        personalBest = data.snake_points || 0;
+      }
+
+      // Personal best mentése DB-be
+      async function savePersonalBest(points) {
+        if (!username) return;
+        await fetch("http://localhost:5000/api/snake/points", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, snake_points: points }),
+        });
+      }
+
+      loadPersonalBest();
+
       var pointsText = document.getElementById("pointCounter");
       var personalBestText = document.getElementById("personalBest");
       var canvas = document.getElementById("game");
@@ -39,10 +64,9 @@
       var grid = 16;
       var count = 0;
       var pointsCounter = 0;
-      
+
       pointsText.style.color = "white";
-      var personalBest = 0;
-      
+
       personalBestText.style.color = "white";
       var snake = {
         x: 160,
@@ -124,7 +148,10 @@
             snake.maxCells++;
             pointsCounter++;
 
-            if (pointsCounter > personalBest) personalBest++;
+            if (pointsCounter > personalBest) {
+              personalBest = pointsCounter;
+              savePersonalBest(personalBest); // saving personalbest to database
+            }
 
             // canvas is 400x400 which is 25x25 grids
             apple.x = getRandomInt(0, 25) * grid;

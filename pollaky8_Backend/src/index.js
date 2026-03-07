@@ -4,6 +4,8 @@ const path = require("path");
 const Database = require("better-sqlite3");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
+const snakeRoutes = require("./routes/snake");
+const game2048Rutes = require("./routes/2048");
 const dotenvResult = dotenv.config({
   path: path.join(__dirname, "..", ".env"),
 });
@@ -42,9 +44,12 @@ app.use(express.json());
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
 
-  const row = db
-    .prepare("SELECT password_hash FROM szemelyek WHERE username = ?")
-    .get(username);
+  const row = db.prepare(`
+    SELECT s.password_hash, p.snake_points, p.game2048_points 
+    FROM szemelyek s
+    LEFT JOIN pontok p ON p.user_id = s.id
+    WHERE s.username = ?
+  `).get(username);
 
   if (!row) {
     return res.status(401).json({ success: false, reason: "not_found" });
@@ -52,7 +57,12 @@ app.post("/api/login", async (req, res) => {
 
   const helyes = await bcrypt.compare(password, row.password_hash);
   if (helyes) {
-    res.json({ success: true, username: username, points: row.points }); // Visszaküldi az adatotak
+    res.json({ 
+      success: true, 
+      username: username, 
+      snake_points: row.snake_points ?? 0,
+      game2048_points: row.game2048_points ?? 0
+    });
   } else {
     res.status(401).json({ success: false, reason: "wrong_password" });
   }
@@ -67,15 +77,13 @@ app.post("/api/register", async (req, res) => {
     db.prepare(
       "INSERT INTO szemelyek (username, password_hash) VALUES (?, ?)",
     ).run(username, hash);
-    db.prepare(
-      "SELECT id, username, password_hash FROM szemelyek WHERE username = ?",
-    ).get(username);
 
     const lastId = db.prepare("SELECT last_insert_rowid() AS id").get().id;
-    db.prepare("INSERT INTO pontok (user_id, snake_points) VALUES (?, ?)").run(
-      lastId,
-      0,
-    );
+
+    db.prepare(
+      "INSERT INTO pontok (user_id, snake_points, game2048_points) VALUES (?, ?, ?)",
+    ).run(lastId, 0, 0);
+
     res.json({ success: true });
   } catch (err) {
     if (err.message.includes("UNIQUE constraint")) {
@@ -85,6 +93,8 @@ app.post("/api/register", async (req, res) => {
     }
   }
 });
+app.use("/api/snake", snakeRoutes(db));
+app.use("/api/2048", game2048Rutes(db));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Szerver fut: http://localhost:${PORT}`));

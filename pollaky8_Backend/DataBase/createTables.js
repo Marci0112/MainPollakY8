@@ -25,10 +25,12 @@ db.exec(`
 `);
 db.exec(`
   CREATE TABLE IF NOT EXISTS pontok (
-    user_id       INTEGER PRIMARY KEY,
-    snake_points  INTEGER DEFAULT 0,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    snake_points INTEGER DEFAULT 0,
+    game2048_points INTEGER DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES szemelyek(id)
-    )
+  )
 `);
 console.log('A "szemelyek" tábla létrejött (vagy már létezett)');
 

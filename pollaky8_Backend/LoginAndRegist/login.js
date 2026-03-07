@@ -16,7 +16,7 @@ document
 
     if (data.success) {
       localStorage.setItem("loggedIn", "true");
-      localStorage.setItem("username", data.username); // ← elmentve
+      localStorage.setItem("username", data.username); 
       window.location.href = "./index.html";
     } else {
       loginErrorMsg.style.color = "red";

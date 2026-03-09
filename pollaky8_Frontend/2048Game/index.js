@@ -1,23 +1,22 @@
 const username = localStorage.getItem("username");
-let personalBest = parseInt(localStorage.getItem("2048_points")) || 0;
 
 // Betöltéskor lekéri a DB-ből
 async function loadPersonalBest() {
   if (!username) return;
   const res = await fetch(`http://localhost:5000/api/2048/points/${username}`);
   const data = await res.json();
-  personalBest = data["2048_points"] || 0;
+  personalBest = data["game2048_points"] || 0;
   document.getElementById("personalBestValue").innerText = personalBest;
 }
 
 // Mentés DB-be
 async function savePersonalBest(points) {
   if (!username) return;
-  localStorage.setItem("2048_points", points);
+  localStorage.setItem("game2048_points", points);
   await fetch("http://localhost:5000/api/2048/points", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, "2048_points": points }),
+    body: JSON.stringify({ username, game2048_points: points }),
   });
 }
 

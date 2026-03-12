@@ -15,7 +15,7 @@ module.exports = (db) => {
     res.json({ "2048_points": row ? row["2048_points"] : 0 });
   });
 
-  // Snake pontok mentése
+  // mentés
   router.post("/points", (req, res) => {
     const { username, game2048_points} = req.body;
     

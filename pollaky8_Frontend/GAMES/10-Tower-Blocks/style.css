@@ -105,3 +105,22 @@ body {
 #container.ended .game-over p {
   transition-delay: 0.3s;
 }
+
+#personal-best {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  text-align: right;
+  font-family: "Comfortaa", cursive;
+  color: #334;
+  font-size: 3vh;
+  line-height: 1.2;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#personalBestValue {
+  font-size: 5vh;
+  font-weight: bold;
+  display: block;
+}

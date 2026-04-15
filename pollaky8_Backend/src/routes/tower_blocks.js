@@ -2,29 +2,29 @@ const express = require("express");
 const router = express.Router();
 const ensurePlayerExists = require("../middleware/ensurePlayerExists");
 
-const GAME2048_ID = 2;
+const TOWER_BLOCKS_ID = 3;
 
 module.exports = (db) => {
-  const ensure = ensurePlayerExists(db, GAME2048_ID);
+  const ensure = ensurePlayerExists(db, TOWER_BLOCKS_ID);
 
-  // 2048 pontok lekérése
+  // Tower Blocks pontok lekérése
   router.get("/points/:username", ensure, (req, res) => {
     const row = db.prepare(`
       SELECT points FROM pontok
       WHERE user_id = ? AND jatek_id = ?
-    `).get(req.userId, GAME2048_ID);
+    `).get(req.userId, TOWER_BLOCKS_ID);
 
-    res.json({ "2048_points": row?.points ?? 0 });
+    res.json({ "tower_blocks_points": row?.points ?? 0 });
   });
 
-  // 2048 pontok mentése
+  // Tower Blocks pontok mentése
   router.post("/points", ensure, (req, res) => {
-    const { game2048_points } = req.body;
+    const { tower_blocks_points } = req.body;
 
     db.prepare(`
       UPDATE pontok SET points = ?
       WHERE user_id = ? AND jatek_id = ?
-    `).run(game2048_points, req.userId, GAME2048_ID);
+    `).run(tower_blocks_points, req.userId, TOWER_BLOCKS_ID);
 
     res.json({ success: true });
   });

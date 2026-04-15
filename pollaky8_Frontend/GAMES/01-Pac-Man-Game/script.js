@@ -1,10 +1,10 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const tileSize = 16; // 28 * 16 = 448, 31 * 16 = 496
-const corridorScale = 1.25; // corridor (where Pac-Man moves) is 1.25x wider
-const corridorTile = Math.round(tileSize * corridorScale); // 20
-const wallSize = tileSize; // walls stay 16px
+const tileSize = 16;
+const corridorScale = 1.25;
+const corridorTile = Math.round(tileSize * corridorScale);
+const wallSize = tileSize;
 const cols = 28;
 const rows = 31;
 
@@ -13,10 +13,70 @@ canvas.height = rows * corridorTile;
 
 const scoreEl = document.getElementById("score");
 const livesEl = document.getElementById("lives");
+const personalBestEl = document.getElementById("personalBestValue");
 const restartBtn = document.getElementById("restartBtn");
 
-// 0: empty, 1: wall, 2: pellet, 3: power pellet
-// Simple Pac-Man inspired layout (not 100% original map)
+// ====================== DB INTEGRÁCIÓ - PERSONAL BEST (élő frissítéssel) ======================
+const username = localStorage.getItem("username");
+let personalBest = 0;      // igazi rekord a szerverről
+let displayedBest = 0;     // amit a játékos lát (élőben frissül)
+
+async function initializePersonalBest() {
+  if (!username) return;
+  try {
+    await fetch("http://localhost:5000/api/pac_man/points", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, pac_man_points: 0 }),
+    });
+    personalBest = 0;
+    displayedBest = 0;
+    personalBestEl.textContent = "0";
+  } catch (err) {
+    console.error("Failed to initialize personal best:", err);
+  }
+}
+
+async function loadPersonalBest() {
+  if (!username) {
+    personalBest = 0;
+    displayedBest = 0;
+    personalBestEl.textContent = "0";
+    return;
+  }
+  try {
+    const res = await fetch(`http://localhost:5000/api/pac_man/points/${username}`);
+    if (res.ok) {
+      const data = await res.json();
+      personalBest = data.pac_man_points || 0;
+      displayedBest = personalBest;
+      personalBestEl.textContent = personalBest;
+    } else if (res.status === 404) {
+      await initializePersonalBest();
+    }
+  } catch (err) {
+    console.error("Failed to load personal best:", err);
+    await initializePersonalBest();
+  }
+}
+
+async function savePersonalBest(newScore) {
+  if (!username || newScore <= personalBest) return;
+  personalBest = newScore;
+  displayedBest = newScore;
+  personalBestEl.textContent = newScore;
+  try {
+    await fetch("http://localhost:5000/api/pac_man/points", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, pac_man_points: newScore }),
+    });
+  } catch (err) {
+    console.error("Failed to save personal best:", err);
+  }
+}
+
+// ====================== JÁTÉK ADATOK ======================
 const levelLayout = [
   "1111111111111111111111111111",
   "1222222222112222222222222221",
@@ -55,14 +115,13 @@ let map = [];
 let pelletsRemaining = 0;
 
 const pacman = {
-  x: 1, // start bottom-left
+  x: 1,
   y: 29,
   dirX: 0,
   dirY: 0,
   nextDirX: 0,
   nextDirY: 0,
-  speed: 8, // tiles per second
-  radius: tileSize * 0.6,
+  speed: 8,
 };
 
 const ghosts = [
@@ -74,9 +133,8 @@ let score = 0;
 let lives = 3;
 let gameOver = false;
 let lastTime = 0;
-let gameTime = 0; // for mouth animation
+let gameTime = 0;
 
-// --- Sound (Web Audio API, no external files) ---
 let audioCtx = null;
 let backgroundOsc = null;
 let backgroundGain = null;
@@ -106,14 +164,13 @@ function startBackgroundSound() {
     backgroundGain.gain.setValueAtTime(0.04, ctx.currentTime);
     backgroundOsc.start(ctx.currentTime);
     backgroundStarted = true;
-    // Siren: slowly rise and fall like original Pac-Man
     backgroundInterval = setInterval(() => {
       if (!backgroundOsc || !ctx) return;
       const t = Date.now() / 1000;
       const freq = 180 + 130 * Math.sin(t * 0.85);
       backgroundOsc.frequency.setTargetAtTime(freq, ctx.currentTime, 0.08);
     }, 80);
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function playPelletSound() {
@@ -131,7 +188,7 @@ function playPelletSound() {
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.06);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.06);
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function playDeathSound() {
@@ -150,7 +207,7 @@ function playDeathSound() {
     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + 0.6);
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function initMap() {
@@ -190,6 +247,7 @@ function restartGame() {
   score = 0;
   lives = 3;
   gameOver = false;
+  displayedBest = personalBest;
   initMap();
   resetEntities();
   updateUI();
@@ -198,6 +256,12 @@ function restartGame() {
 function updateUI() {
   scoreEl.textContent = score;
   livesEl.textContent = lives;
+
+  // Élő Personal Best frissítés
+  if (score > displayedBest) {
+    displayedBest = score;
+    personalBestEl.textContent = score;
+  }
 }
 
 function isWall(col, row) {
@@ -213,11 +277,8 @@ function trySetDirection(dx, dy) {
 function handleInput() {
   const centerCol = Math.round(pacman.x);
   const centerRow = Math.round(pacman.y);
-
   const offsetX = Math.abs(pacman.x - centerCol);
   const offsetY = Math.abs(pacman.y - centerRow);
-
-  // Allow direction change when reasonably aligned, or when stopped so first keypress works
   const aligned = offsetX < 0.35 && offsetY < 0.35;
   const stopped = pacman.dirX === 0 && pacman.dirY === 0;
 
@@ -233,12 +294,10 @@ function handleInput() {
 
 function movePacman(deltaSeconds) {
   handleInput();
-
   const speedPerFrame = pacman.speed * deltaSeconds;
   let newX = pacman.x + pacman.dirX * speedPerFrame;
   let newY = pacman.y + pacman.dirY * speedPerFrame;
 
-  // Tunnel wrap
   if (newX < 0) newX = cols - 1;
   if (newX > cols - 1) newX = 0;
 
@@ -246,7 +305,6 @@ function movePacman(deltaSeconds) {
   const nextRow = Math.round(newY);
 
   if (isWall(nextCol, nextRow)) {
-    // Block movement into wall; snap back to the corridor tile (the one we're in)
     const dx = pacman.dirX;
     const dy = pacman.dirY;
     pacman.dirX = 0;
@@ -259,7 +317,6 @@ function movePacman(deltaSeconds) {
   pacman.x = newX;
   pacman.y = newY;
 
-  // Eat pellets
   const col = Math.round(pacman.x);
   const row = Math.round(pacman.y);
   if (map[row] && (map[row][col] === 2 || map[row][col] === 3)) {
@@ -272,6 +329,7 @@ function movePacman(deltaSeconds) {
 
     if (pelletsRemaining <= 0) {
       gameOver = true;
+      savePersonalBest(score);
       setTimeout(() => alert("You cleared the maze! 🎉"), 100);
     }
   }
@@ -286,19 +344,13 @@ function moveGhost(ghost, deltaSeconds) {
   const nextRow = Math.round(newY);
 
   if (isWall(nextCol, nextRow)) {
-    // choose a new random direction (no 180° turn)
     const dirs = [
-      { x: 1, y: 0 },
-      { x: -1, y: 0 },
-      { x: 0, y: 1 },
-      { x: 0, y: -1 },
+      { x: 1, y: 0 }, { x: -1, y: 0 },
+      { x: 0, y: 1 }, { x: 0, y: -1 }
     ];
     const currentOppX = -ghost.dirX;
     const currentOppY = -ghost.dirY;
-
-    const valid = dirs.filter(
-      (d) => !(d.x === currentOppX && d.y === currentOppY)
-    );
+    const valid = dirs.filter(d => !(d.x === currentOppX && d.y === currentOppY));
     const choice = valid[Math.floor(Math.random() * valid.length)];
     ghost.dirX = choice.x;
     ghost.dirY = choice.y;
@@ -308,7 +360,6 @@ function moveGhost(ghost, deltaSeconds) {
   ghost.x = newX;
   ghost.y = newY;
 
-  // Tunnel wrap
   if (ghost.x < 0) ghost.x = cols - 1;
   if (ghost.x > cols - 1) ghost.x = 0;
 }
@@ -327,6 +378,7 @@ function checkCollisions() {
       updateUI();
       if (lives <= 0) {
         gameOver = true;
+        savePersonalBest(score);
         setTimeout(() => alert("Game Over!"), 100);
       }
       resetEntities();
@@ -343,7 +395,6 @@ function drawMap() {
       const y = r * corridorTile;
 
       if (val === 1) {
-        // Wall: draw at same size (wallSize), centered in the wider corridor cell
         const wallX = x + (corridorTile - wallSize) / 2;
         const wallY = y + (corridorTile - wallSize) / 2;
         ctx.fillStyle = "#001b4d";
@@ -358,24 +409,12 @@ function drawMap() {
         if (val === 2) {
           ctx.fillStyle = "#ffd966";
           ctx.beginPath();
-          ctx.arc(
-            x + corridorTile / 2,
-            y + corridorTile / 2,
-            2,
-            0,
-            Math.PI * 2
-          );
+          ctx.arc(x + corridorTile / 2, y + corridorTile / 2, 2, 0, Math.PI * 2);
           ctx.fill();
         } else if (val === 3) {
           ctx.fillStyle = "#ffd966";
           ctx.beginPath();
-          ctx.arc(
-            x + corridorTile / 2,
-            y + corridorTile / 2,
-            4,
-            0,
-            Math.PI * 2
-          );
+          ctx.arc(x + corridorTile / 2, y + corridorTile / 2, 4, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -384,43 +423,28 @@ function drawMap() {
 }
 
 function drawPacman() {
-  // Draw centered in the corridor cell (corridorTile)
   const px = pacman.x * corridorTile + corridorTile / 2;
   const py = pacman.y * corridorTile + corridorTile / 2;
 
-  const angleOffset =
-    pacman.dirX === 1
-      ? 0
-      : pacman.dirX === -1
-      ? Math.PI
-      : pacman.dirY === -1
-      ? -Math.PI / 2
-      : pacman.dirY === 1
-      ? Math.PI / 2
-      : 0;
+  const angleOffset = pacman.dirX === 1 ? 0 :
+    pacman.dirX === -1 ? Math.PI :
+      pacman.dirY === -1 ? -Math.PI / 2 :
+        pacman.dirY === 1 ? Math.PI / 2 : 0;
 
-  // Animate mouth open/close (chomp) like the original game
   const chompSpeed = 18;
   const mouthOpen = 0.08 + 0.28 * (0.5 + 0.5 * Math.sin(gameTime * chompSpeed));
 
   ctx.fillStyle = "#ffd966";
   ctx.beginPath();
   ctx.moveTo(px, py);
-  ctx.arc(
-    px,
-    py,
-    corridorTile * 0.6,
-    angleOffset + mouthOpen,
-    angleOffset + Math.PI * 2 - mouthOpen
-  );
+  ctx.arc(px, py, corridorTile * 0.6, angleOffset + mouthOpen, angleOffset + Math.PI * 2 - mouthOpen);
   ctx.closePath();
   ctx.fill();
 }
 
 function drawGhost(ghost) {
-  // Draw centered on the ghost's tile so they don't appear half on wall
-  const gx = (Math.round(ghost.x) * corridorTile) + corridorTile / 2;
-  const gy = (Math.round(ghost.y) * corridorTile) + corridorTile / 2;
+  const gx = Math.round(ghost.x) * corridorTile + corridorTile / 2;
+  const gy = Math.round(ghost.y) * corridorTile + corridorTile / 2;
   const r = corridorTile * 0.6;
 
   ctx.fillStyle = ghost.color;
@@ -431,7 +455,6 @@ function drawGhost(ghost) {
   ctx.closePath();
   ctx.fill();
 
-  // eyes
   ctx.fillStyle = "#fff";
   ctx.beginPath();
   ctx.arc(gx - r / 3, gy - r / 4, r / 4, 0, Math.PI * 2);
@@ -471,32 +494,10 @@ function loop(timestamp) {
 document.addEventListener("keydown", (e) => {
   startBackgroundSound();
   switch (e.key) {
-    case "ArrowUp":
-    case "w":
-    case "W":
-      e.preventDefault();
-      trySetDirection(0, -1);
-      break;
-    case "ArrowDown":
-    case "s":
-    case "S":
-      e.preventDefault();
-      trySetDirection(0, 1);
-      break;
-    case "ArrowLeft":
-    case "a":
-    case "A":
-      e.preventDefault();
-      trySetDirection(-1, 0);
-      break;
-    case "ArrowRight":
-    case "d":
-    case "D":
-      e.preventDefault();
-      trySetDirection(1, 0);
-      break;
-    default:
-      break;
+    case "ArrowUp": case "w": case "W": e.preventDefault(); trySetDirection(0, -1); break;
+    case "ArrowDown": case "s": case "S": e.preventDefault(); trySetDirection(0, 1); break;
+    case "ArrowLeft": case "a": case "A": e.preventDefault(); trySetDirection(-1, 0); break;
+    case "ArrowRight": case "d": case "D": e.preventDefault(); trySetDirection(1, 0); break;
   }
 });
 
@@ -505,8 +506,9 @@ restartBtn.addEventListener("click", () => {
   restartGame();
 });
 
+// ====================== INDÍTÁS ======================
 initMap();
 resetEntities();
 updateUI();
+loadPersonalBest();
 requestAnimationFrame(loop);
-

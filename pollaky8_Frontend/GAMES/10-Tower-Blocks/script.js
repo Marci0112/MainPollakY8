@@ -1,7 +1,10 @@
 console.clear();
+
+// ====================== DB INTEGRÁCIÓ (username + personal best) ======================
+const username = localStorage.getItem("username");
+
 var Stage = /** @class */ (function () {
   function Stage() {
-    // container
     var _this = this;
     this.render = function () {
       this.renderer.render(this.scene, this.camera);
@@ -13,7 +16,6 @@ var Stage = /** @class */ (function () {
       this.scene.remove(elem);
     };
     this.container = document.getElementById("game");
-    // renderer
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: false,
@@ -21,9 +23,7 @@ var Stage = /** @class */ (function () {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setClearColor("#D0CBC7", 1);
     this.container.appendChild(this.renderer.domElement);
-    // scene
     this.scene = new THREE.Scene();
-    // camera
     var aspect = window.innerWidth / window.innerHeight;
     var d = 20;
     this.camera = new THREE.OrthographicCamera(
@@ -38,7 +38,6 @@ var Stage = /** @class */ (function () {
     this.camera.position.y = 2;
     this.camera.position.z = 2;
     this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-    //light
     this.light = new THREE.DirectionalLight(0xffffff, 0.5);
     this.light.position.set(0, 499, 0);
     this.scene.add(this.light);
@@ -70,9 +69,9 @@ var Stage = /** @class */ (function () {
   };
   return Stage;
 })();
+
 var Block = /** @class */ (function () {
   function Block(block) {
-    // set size and position
     this.STATES = { ACTIVE: "active", STOPPED: "stopped", MISSED: "missed" };
     this.MOVE_AMOUNT = 12;
     this.dimension = { width: 0, height: 0, depth: 0 };
@@ -81,7 +80,6 @@ var Block = /** @class */ (function () {
     this.index = (this.targetBlock ? this.targetBlock.index : 0) + 1;
     this.workingPlane = this.index % 2 ? "x" : "z";
     this.workingDimension = this.index % 2 ? "width" : "depth";
-    // set the dimensions from the target block, or defaults.
     this.dimension.width = this.targetBlock
       ? this.targetBlock.dimension.width
       : 10;
@@ -97,7 +95,6 @@ var Block = /** @class */ (function () {
     this.colorOffset = this.targetBlock
       ? this.targetBlock.colorOffset
       : Math.round(Math.random() * 100);
-    // set color
     if (!this.targetBlock) {
       this.color = 0x333344;
     } else {
@@ -107,13 +104,10 @@ var Block = /** @class */ (function () {
       var b = Math.sin(0.3 * offset + 4) * 55 + 200;
       this.color = new THREE.Color(r / 255, g / 255, b / 255);
     }
-    // state
     this.state = this.index > 1 ? this.STATES.ACTIVE : this.STATES.STOPPED;
-    // set direction
     this.speed = -0.1 - this.index * 0.005;
     if (this.speed < -4) this.speed = -4;
     this.direction = this.speed;
-    // create block
     var geometry = new THREE.BoxGeometry(
       this.dimension.width,
       this.dimension.height,
@@ -150,7 +144,7 @@ var Block = /** @class */ (function () {
       this.targetBlock.dimension[this.workingDimension] -
       Math.abs(
         this.position[this.workingPlane] -
-          this.targetBlock.position[this.workingPlane]
+        this.targetBlock.position[this.workingPlane]
       );
     var blocksToReturn = {
       plane: this.workingPlane,
@@ -242,9 +236,11 @@ var Block = /** @class */ (function () {
   };
   return Block;
 })();
+
 var Game = /** @class */ (function () {
   function Game() {
     var _this = this;
+
     this.STATES = {
       LOADING: "loading",
       PLAYING: "playing",
@@ -252,23 +248,37 @@ var Game = /** @class */ (function () {
       ENDED: "ended",
       RESETTING: "resetting",
     };
+
     this.blocks = [];
     this.state = this.STATES.LOADING;
+
     this.stage = new Stage();
     this.mainContainer = document.getElementById("container");
     this.scoreContainer = document.getElementById("score");
+    this.bestScoreElement = document.getElementById("personalBestValue");
+
     this.startButton = document.getElementById("start-button");
     this.instructions = document.getElementById("instructions");
+
+    this.personalBest = 0;
+
     this.scoreContainer.innerHTML = "0";
+
     this.newBlocks = new THREE.Group();
     this.placedBlocks = new THREE.Group();
     this.choppedBlocks = new THREE.Group();
+
     this.stage.add(this.newBlocks);
     this.stage.add(this.placedBlocks);
     this.stage.add(this.choppedBlocks);
+
+    // ====================== PERSONAL BEST (DB-ből) ======================
+    this.loadPersonalBest();
+
     this.addBlock();
     this.tick();
     this.updateState(this.STATES.READY);
+
     document.addEventListener("keydown", function (e) {
       if (e.keyCode == 32) _this.onAction();
     });
@@ -277,17 +287,55 @@ var Game = /** @class */ (function () {
     });
     document.addEventListener("touchstart", function (e) {
       e.preventDefault();
-      // this.onAction();
-      // ☝️ this triggers after click on android so you
-      // insta-lose, will figure it out later.
     });
   }
+
+  // ====================== PERSONAL BEST FUNKCIÓK (DB verzió) ======================
+  Game.prototype.loadPersonalBest = async function () {
+    if (!username) {
+      this.personalBest = 0;
+      this.bestScoreElement.innerHTML = "0";
+      return;
+    }
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/tower_blocks/points/${username}`
+      );
+      if (!res.ok) throw new Error("Hiba a betöltésnél");
+      const data = await res.json();
+      this.personalBest = data.tower_blocks_points || 0;
+      this.bestScoreElement.innerHTML = this.personalBest;
+    } catch (err) {
+      console.error("Failed to load personal best:", err);
+      this.personalBest = 0;
+      this.bestScoreElement.innerHTML = "0";
+    }
+  };
+
+  Game.prototype.savePersonalBest = async function (score) {
+    if (!username || score <= this.personalBest) return;
+
+    this.personalBest = score;
+    this.bestScoreElement.innerHTML = this.personalBest;
+
+    try {
+      await fetch("http://localhost:5000/api/tower_blocks/points", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, tower_blocks_points: score }),
+      });
+    } catch (err) {
+      console.error("Failed to save personal best:", err);
+    }
+  };
+
   Game.prototype.updateState = function (newState) {
     for (var key in this.STATES)
       this.mainContainer.classList.remove(this.STATES[key]);
     this.mainContainer.classList.add(newState);
     this.state = newState;
   };
+
   Game.prototype.onAction = function () {
     switch (this.state) {
       case this.STATES.READY:
@@ -301,19 +349,23 @@ var Game = /** @class */ (function () {
         break;
     }
   };
+
   Game.prototype.startGame = function () {
-    if (this.state != this.STATES.PLAYING) {
+    if (this.state !== this.STATES.PLAYING) {
       this.scoreContainer.innerHTML = "0";
       this.updateState(this.STATES.PLAYING);
       this.addBlock();
     }
   };
+
   Game.prototype.restartGame = function () {
     var _this = this;
     this.updateState(this.STATES.RESETTING);
+
     var oldBlocks = this.placedBlocks.children;
     var removeSpeed = 0.2;
     var delayAmount = 0.02;
+
     var _loop_1 = function (i) {
       TweenLite.to(oldBlocks[i].scale, removeSpeed, {
         x: 0,
@@ -322,7 +374,7 @@ var Game = /** @class */ (function () {
         delay: (oldBlocks.length - i) * delayAmount,
         ease: Power1.easeIn,
         onComplete: function () {
-          return _this.placedBlocks.remove(oldBlocks[i]);
+          _this.placedBlocks.remove(oldBlocks[i]);
         },
       });
       TweenLite.to(oldBlocks[i].rotation, removeSpeed, {
@@ -331,11 +383,14 @@ var Game = /** @class */ (function () {
         ease: Power1.easeIn,
       });
     };
+
     for (var i = 0; i < oldBlocks.length; i++) {
       _loop_1(i);
     }
+
     var cameraMoveSpeed = removeSpeed * 2 + oldBlocks.length * delayAmount;
     this.stage.setCamera(2, cameraMoveSpeed);
+
     var countdown = { value: this.blocks.length - 1 };
     TweenLite.to(countdown, cameraMoveSpeed, {
       value: 0,
@@ -343,16 +398,21 @@ var Game = /** @class */ (function () {
         _this.scoreContainer.innerHTML = String(Math.round(countdown.value));
       },
     });
+
     this.blocks = this.blocks.slice(0, 1);
+
     setTimeout(function () {
       _this.startGame();
     }, cameraMoveSpeed * 1000);
   };
+
   Game.prototype.placeBlock = function () {
     var _this = this;
     var currentBlock = this.blocks[this.blocks.length - 1];
     var newBlocks = currentBlock.place();
+
     this.newBlocks.remove(currentBlock.mesh);
+
     if (newBlocks.placed) this.placedBlocks.add(newBlocks.placed);
     if (newBlocks.chopped) {
       this.choppedBlocks.add(newBlocks.chopped);
@@ -360,7 +420,7 @@ var Game = /** @class */ (function () {
         y: "-=30",
         ease: Power1.easeIn,
         onComplete: function () {
-          return _this.choppedBlocks.remove(newBlocks.chopped);
+          _this.choppedBlocks.remove(newBlocks.chopped);
         },
       };
       var rotateRandomness = 10;
@@ -376,6 +436,7 @@ var Game = /** @class */ (function () {
             : 0.1,
         y: Math.random() * 0.1,
       };
+
       if (
         newBlocks.chopped.position[newBlocks.plane] >
         newBlocks.placed.position[newBlocks.plane]
@@ -386,26 +447,36 @@ var Game = /** @class */ (function () {
         positionParams[newBlocks.plane] =
           "-=" + 40 * Math.abs(newBlocks.direction);
       }
+
       TweenLite.to(newBlocks.chopped.position, 1, positionParams);
       TweenLite.to(newBlocks.chopped.rotation, 1, rotationParams);
     }
+
     this.addBlock();
   };
+
   Game.prototype.addBlock = function () {
     var lastBlock = this.blocks[this.blocks.length - 1];
     if (lastBlock && lastBlock.state == lastBlock.STATES.MISSED) {
       return this.endGame();
     }
+
     this.scoreContainer.innerHTML = String(this.blocks.length - 1);
+
     var newKidOnTheBlock = new Block(lastBlock);
     this.newBlocks.add(newKidOnTheBlock.mesh);
     this.blocks.push(newKidOnTheBlock);
+
     this.stage.setCamera(this.blocks.length * 2);
     if (this.blocks.length >= 5) this.instructions.classList.add("hide");
   };
+
   Game.prototype.endGame = function () {
+    const currentScore = this.blocks.length - 2;
+    this.savePersonalBest(currentScore);   // ← DB-be menti (ha jobb)
     this.updateState(this.STATES.ENDED);
   };
+
   Game.prototype.tick = function () {
     var _this = this;
     this.blocks[this.blocks.length - 1].tick();
@@ -414,6 +485,8 @@ var Game = /** @class */ (function () {
       _this.tick();
     });
   };
+
   return Game;
 })();
+
 var game = new Game();

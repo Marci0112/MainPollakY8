@@ -1,18 +1,18 @@
 const username = localStorage.getItem("username");
+var personalBest = 0;
 
-// Betöltéskor lekéri a DB-ből
+// Betöltéskor lekéri a DB-ből a personal bestet
 async function loadPersonalBest() {
   if (!username) return;
   const res = await fetch(`http://localhost:5000/api/2048/points/${username}`);
   const data = await res.json();
-  personalBest = data["game2048_points"] || 0;
+  personalBest = data["2048_points"] || 0;
   document.getElementById("personalBestValue").innerText = personalBest;
 }
 
-// Mentés DB-be
+// Personal best mentése DB-be
 async function savePersonalBest(points) {
   if (!username) return;
-  localStorage.setItem("game2048_points", points);
   await fetch("http://localhost:5000/api/2048/points", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -282,9 +282,7 @@ function cellReset() {
       }
     }
   }
-  if (count == 16) {
-    document.getElementById("status").className = "lose";
-  } else if (document.getElementsByClassName("grid").id == "moved") {
+  if (document.getElementsByClassName("grid").id == "moved") {
     cellCreator(1, 1);
   }
   document.getElementsByClassName("grid").id = " ";
@@ -347,7 +345,6 @@ function colorSet(value, tile) {
       tile.style.background = "#1C9F4E";
       tile.style.color = "white";
       tile.style.fontSize = "40px";
-      document.getElementById("status").className = "won";
       break;
     case 4096:
       tile.style.background = "#468499";
@@ -378,7 +375,7 @@ function reset() {
       }
     }
   }
-  document.getElementById("status").className = "";
+
   document.getElementById(" ").dataset.value = 0;
   score();
   cellReset();

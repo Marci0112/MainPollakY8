@@ -12,3 +12,13 @@ canvas {
   border: 1x solid #0a3cda;
   margin: 10px;
 }
+
+.score-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.score-label, .score-label span{
+  font-size: 25pt;
+  text-align: end;
+}

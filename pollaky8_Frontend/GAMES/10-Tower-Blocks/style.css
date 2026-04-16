@@ -124,3 +124,14 @@ body {
   font-weight: bold;
   display: block;
 }
+
+
+.BackBtn i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: white;
+  font-size: 40px;
+  margin: 10px;
+  z-index: 999;
+}

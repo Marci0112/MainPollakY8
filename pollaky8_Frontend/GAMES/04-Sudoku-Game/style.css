@@ -330,3 +330,13 @@ body {
     font-size: 1.15rem;
   }
 }
+
+
+.BackBtn i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: white;
+  font-size: 40px;
+  margin: 10px;
+}

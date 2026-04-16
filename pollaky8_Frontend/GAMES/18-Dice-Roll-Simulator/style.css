@@ -68,3 +68,13 @@ li span {
   font-size: 3rem;
   margin-right: 1rem;
 }
+
+
+.BackBtn i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: black;
+  font-size: 40px;
+  margin: 10px;
+}

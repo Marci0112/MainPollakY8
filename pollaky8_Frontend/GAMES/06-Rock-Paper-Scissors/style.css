@@ -66,3 +66,13 @@ body {
   font-weight: 500;
   color: yellow;
 }
+
+
+.BackBtn i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: white;
+  font-size: 40px;
+  margin: 10px;
+}

@@ -12,3 +12,13 @@ canvas {
   border: 1x solid #0a3cda;
   margin: 10px;
 }
+
+
+.BackBtn i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: black;
+  font-size: 40px;
+  margin: 10px;
+}

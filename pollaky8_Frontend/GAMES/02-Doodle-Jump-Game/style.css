@@ -198,3 +198,13 @@ body {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.75);
 }
+
+
+.BackBtn i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: white;
+  font-size: 40px;
+  margin: 10px;
+}

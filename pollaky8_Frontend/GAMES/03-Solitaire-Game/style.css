@@ -523,3 +523,13 @@ body {
   .waste .card-wrapper:nth-last-child(2) { left: 6px; }
   .waste .card-wrapper:nth-last-child(3) { left: 12px; }
 }
+
+
+.BackBtn i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: white;
+  font-size: 40px;
+  margin: 10px;
+}

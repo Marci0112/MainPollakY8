@@ -53,6 +53,7 @@ canvas {
   border-radius: 5px;
   font-family: inherit;
   font-size: 1rem;
+  margin-top: 30px;
 }
 
 .btn:focus {
@@ -89,4 +90,14 @@ canvas {
 
 .rules.show {
   transform: translateX(0);
+}
+
+
+.BackBtn i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: white;
+  font-size: 40px;
+  margin: 10px;
 }

@@ -32,6 +32,7 @@ INSERT OR IGNORE INTO "jatek" ("id", "jatek neve") VALUES (1, 'snake');
 INSERT OR IGNORE INTO "jatek" ("id", "jatek neve") VALUES (2, 'game_2048');
 INSERT OR IGNORE INTO "jatek" ("id", "jatek neve") VALUES (3, 'tower_blocks');
 INSERT OR IGNORE INTO "jatek" ("id", "jatek neve") VALUES (4, 'pac_man');
+INSERT OR IGNORE INTO "jatek" ("id", "jatek neve") VALUES (5, 'flappy_bird');
 
 -- --------------------------------------------------------
 -- Tábla: szemelyek
@@ -64,16 +65,16 @@ COMMIT;
 try {
   // Idegenkulcs megszorítások engedélyezése
   db.exec("PRAGMA foreign_keys = ON;");
-  
+
   // Teljes szkript futtatása
   db.exec(sqlScript);
-  
-  console.log('Az adatbázis táblái sikeresen létrejöttek (vagy már léteztek)');
+
+  console.log("Az adatbázis táblái sikeresen létrejöttek (vagy már léteztek)");
   console.log('- "jatek" tábla létrejött és feltöltve');
   console.log('- "szemelyek" tábla létrejött');
   console.log('- "pontok" tábla létrejött kapcsolatokkal és indexekkel');
 } catch (error) {
-  console.error('Hiba történt az adatbázis létrehozása során:', error.message);
+  console.error("Hiba történt az adatbázis létrehozása során:", error.message);
 } finally {
   db.close();
 }

@@ -121,7 +121,7 @@ function display_intro_instructions() {
   ctx.fillText(
     "Press, touch or click to start",
     myCanvas.width / 2,
-    myCanvas.height / 4
+    myCanvas.height / 4,
   );
 }
 function display_game_over() {
@@ -141,7 +141,7 @@ function display_bar_running_along_bottom() {
   ctx.drawImage(
     bottom_bar,
     bottom_bar_offset,
-    myCanvas.height - bottom_bar.height
+    myCanvas.height - bottom_bar.height,
   );
 }
 function reset_game() {
@@ -176,6 +176,7 @@ function Do_a_Frame() {
   ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
   bird.Do_Frame_Things();
   display_bar_running_along_bottom();
+
   switch (game_mode) {
     case "prestart": {
       display_intro_instructions();
@@ -205,3 +206,56 @@ bird.x = myCanvas.width / 3;
 bird.y = myCanvas.height / 2;
 
 setInterval(Do_a_Frame, 1000 / FPS);
+
+// ===================== Personal best & score tracking =====================
+const username = localStorage.getItem("username");
+let personalBest = 0;
+let currentScore = 0;
+
+const pointCounterEl = document.getElementById("pointCounter");
+const personalBestEl = document.getElementById("personalBestValue");
+
+async function loadPersonalBest() {
+  if (!username) return;
+  const res = await fetch(
+    `http://localhost:5000/api/flappy_bird/points/${username}`,
+  );
+  const data = await res.json();
+  personalBest = data.flappy_bird_points || 0;
+  personalBestEl.textContent = personalBest;
+}
+
+async function savePersonalBest(points) {
+  if (!username) return;
+  await fetch("http://localhost:5000/api/flappy_bird/points", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, flappy_bird_points: points }),
+  });
+}
+
+function computeScore() {
+  let score = 0;
+  for (let i = 0; i < pipes.length; i++) if (pipes[i].x < bird.x) score += 0.5;
+  return Math.floor(score);
+}
+
+// Játék vége figyelő
+let lastGameMode = game_mode;
+setInterval(() => {
+  if (lastGameMode === "running" && game_mode === "over") {
+    currentScore = computeScore();
+    if (currentScore > personalBest) {
+      personalBest = currentScore;
+      personalBestEl.textContent = personalBest;
+      savePersonalBest(personalBest);
+    }
+  }
+  if (game_mode === "running") {
+    currentScore = computeScore();
+    pointCounterEl.textContent = `Score: ${currentScore}`;
+  }
+  lastGameMode = game_mode;
+}, 100);
+
+loadPersonalBest();

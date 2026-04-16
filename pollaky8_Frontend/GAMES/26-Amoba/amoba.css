@@ -9,7 +9,7 @@ body {
     justify-content: space-between;
 }
 #winner {
-    height: 30px; /* Előre meghatározott magasság */
+    height: 30px; 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -83,7 +83,17 @@ button:hover {
         width: 100%;
         margin-top: auto;
     }
-    /* Add color:black to relevant elements */
+    
 h3, h4, #winner {
     color: black;
+}
+
+
+.BackBtn i {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: black;
+  font-size: 40px;
+  margin: 10px;
 }

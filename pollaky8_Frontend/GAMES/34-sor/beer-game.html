@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sör Töltő Játék</title>
+  <link href="https://fonts.googleapis.com/css2?family=Germania+One&family=Roboto+Condensed:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Roboto Condensed', sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      user-select: none;
+    }
+
+    h1 {
+      font-family: 'Germania One', serif;
+      font-size: 2.2rem;
+      text-align: center;
+      margin-bottom: 6px;
+      color: #f0c040;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #aaa;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .subtitle span {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #f0c040;
+    }
+
+    #game-svg {
+      display: block;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hint {
+      font-size: 18px;
+      color: #666;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .status-box {
+      text-align: center;
+      min-height: 70px;
+      margin: 14px 0;
+    }
+
+    #percent-display {
+      font-size: 1.1rem;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    #result-display {
+      font-family: 'Germania One', serif;
+      font-size: 1.6rem;
+    }
+
+    .result-win   { color: #2ecc71; }
+    .result-close { color: #f39c12; }
+    .result-lose  { color: #e74c3c; }
+
+    #reset-btn {
+      padding: 8px 28px;
+      border-radius: 24px;
+      border: 1.5px solid #555;
+      background: transparent;
+      color: #eee;
+      font-family: 'Roboto Condensed', sans-serif;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #reset-btn:hover  { background: rgba(255,255,255,0.1); }
+    #reset-btn:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+
+  <a href="../../index.html" class="BackBtn"><i class="fa-solid fa-arrow-left-long"></i></a>
+
+  <h1>Töltsd meg a korsót!</h1>
+  <p class="subtitle">Cél: <span id="target-pct">60</span>%</p>
+
+  <!--
+    Egy közös SVG, 220x460 px viewBox.
+    A csap kifolyója x=108 körül van.
+    A korsó közepe szintén x=110 → egyenesen beleesik a sörfolyam.
+
+    y-koordináták:
+      0   – csap kar teteje
+      80  – csap kar alja / csap cső teteje
+      106 – csap cső alja / kifolyó kezdete
+      106-230 – sörfolyam
+      230 – korsó teteje (nyílás)
+      430 – korsó alja (belső)
+      450 – korsó talp alja
+  -->
+  <svg id="game-svg" width="220" height="460" viewBox="0 0 220 460" style="cursor:pointer">
+    <defs>
+      <clipPath id="mug-clip">
+        <rect x="50" y="230" width="120" height="200" rx="6"/>
+      </clipPath>
+    </defs>
+
+    <!-- ===== CSAP ===== -->
+    <!-- vízszintes cső: jobbra nyúlik, kifolyó x=130-nál van -->
+    <rect x="10" y="80" width="120" height="26" rx="6" fill="#bbb"/>
+    <!-- tartóblokk bal oldalon -->
+    <rect x="4"  y="66" width="62"  height="48" rx="10" fill="#999"/>
+    <!-- kar -->
+    <rect id="handle-bar" x="94" y="4" width="16" height="80" rx="8" fill="#555"
+          style="transform-origin: 102px 86px; transition: transform 0.15s;"/>
+    <!-- kar gomb -->
+    <circle cx="102" cy="88" r="13" fill="#777"/>
+    <!-- kifolyó csőr -->
+    <rect x="120" y="80" width="20" height="30" rx="4" fill="#aaa"/>
+
+    <!-- sörfolyam: x=123..135 (közepe 129 ≈ korsó közepe 110+19... igazítva a csőrhöz) -->
+    <!-- a csőr közepe: x=120+10=130, korsó belső közepe: 50+60=110 → folyam x=124 -->
+    <rect id="pour-rect" x="124" y="115" width="12" height="0" fill="rgba(229,197,57,0.88)" rx="6"/>
+
+    <!-- ===== KORSÓ ===== -->
+    <!-- belső háttér -->
+    <rect x="50" y="230" width="120" height="200" rx="6" fill="#2a2a3e"/>
+    <!-- sör töltelék -->
+    <rect id="beer-fill" x="50" y="430" width="120" height="0" fill="#e5c539" clip-path="url(#mug-clip)"/>
+    <!-- hab -->
+    <rect id="foam-fill" x="50" y="430" width="120" height="0" fill="rgba(255,255,245,0.93)" clip-path="url(#mug-clip)"/>
+    <!-- korsó fal (keret előre) -->
+    <rect x="50" y="230" width="120" height="200" rx="6" fill="none" stroke="#ccc" stroke-width="12"/>
+    <!-- fül -->
+    <path d="M170 270 Q210 270 210 320 Q210 370 170 370"
+          fill="none" stroke="#ccc" stroke-width="12" stroke-linecap="round"/>
+    <!-- talp -->
+    <rect x="42" y="428" width="136" height="20" rx="6" fill="#ccc"/>
+
+    <!-- átlátszó hit-zone: korsó = reset, csap felső fele = töltés -->
+    <rect id="tap-hit" x="0"   y="0"   width="220" height="220" fill="transparent"/>
+    <rect id="mug-hit" x="42"  y="228" width="180" height="222" fill="transparent"/>
+  </svg>
+
+  <br><br>
+  <p class="hint">Tartsd lenyomva a csapot &nbsp;·&nbsp; Kattints a korsóra a resethez</p>
+
+  <div class="status-box">
+    <p id="percent-display"></p>
+    <p id="result-display"></p>
+  </div>
+
+  <script>
+    const MUG_BOTTOM = 430;   // korsó belsejének alja (SVG y)
+    const MUG_FULL_H = 200;   // korsó belső magassága px-ben
+    const POUR_TOP   = 110;   // sörfolyam indul itt (csőr alja)
+    const MUG_TOP    = 230;   // korsó nyílása (SVG y)
+    const FILL_RATE  = 10;    // % / másodperc
+
+    let target      = randomTarget();
+    let filling     = false;
+    let fillPercent = 0;
+    let fillStart   = null;
+    let animFrame   = null;
+    let locked      = false;
+
+    const pourRect       = document.getElementById('pour-rect');
+    const beerFill       = document.getElementById('beer-fill');
+    const foamFill       = document.getElementById('foam-fill');
+    const handleBar      = document.getElementById('handle-bar');
+    const percentDisplay = document.getElementById('percent-display');
+    const resultDisplay  = document.getElementById('result-display');
+
+    document.getElementById('target-pct').textContent = target;
+
+    function randomTarget() {
+      return Math.floor(Math.random() * 91) + 5;
+    }
+
+    function updateMug(pct) {
+      const totalH = Math.min(pct / 100 * MUG_FULL_H, MUG_FULL_H);
+      const foamH  = Math.min(totalH * 0.18, 28);
+      const beerH  = Math.max(totalH - foamH, 0);
+
+      beerFill.setAttribute('y', MUG_BOTTOM - beerH);
+      beerFill.setAttribute('height', beerH);
+      foamFill.setAttribute('y', MUG_BOTTOM - totalH);
+      foamFill.setAttribute('height', foamH);
+
+      // Sörfolyam alja = sörszint teteje a korsóban (vagy korsó nyílása ha még üres)
+      if (filling) {
+        const beerTopY = totalH > 0 ? (MUG_BOTTOM - totalH) : MUG_TOP;
+        const pourH    = Math.max(beerTopY - POUR_TOP, 0);
+        pourRect.setAttribute('height', pourH);
+      }
+    }
+
+    function startFill() {
+      if (locked || fillPercent >= 100) return;
+      filling   = true;
+      fillStart = performance.now();
+      handleBar.style.transform = 'rotate(15deg)';
+      // kezdeti folyam: csőrtől korsó tetejéig
+      pourRect.setAttribute('height', MUG_TOP - POUR_TOP);
+      loop();
+    }
+
+    function stopFill() {
+      if (!filling) return;
+      filling = false;
+      handleBar.style.transform = '';
+      pourRect.setAttribute('height', 0);
+      cancelAnimationFrame(animFrame);
+      showResult();
+    }
+
+    function loop() {
+      if (!filling) return;
+      const now = performance.now();
+      const dt  = (now - fillStart) / 1000;
+      fillStart = now;
+      fillPercent = Math.min(fillPercent + FILL_RATE * dt, 100);
+      updateMug(fillPercent);
+      percentDisplay.textContent = 'Megtöltve: ' + Math.round(fillPercent) + '%';
+      if (fillPercent >= 100) {
+        stopFill();
+        locked = true;
+        return;
+      }
+      animFrame = requestAnimationFrame(loop);
+    }
+
+    function showResult() {
+      const rounded = Math.round(fillPercent);
+      if (rounded === 0) return;
+      locked = true;
+      resultDisplay.className = '';
+      if (rounded === target) {
+        resultDisplay.textContent = '🍺 Pontosan eltaláltad!';
+        resultDisplay.classList.add('result-win');
+      } else if (Math.abs(rounded - target) <= 5) {
+        resultDisplay.textContent = 'Majdnem! (' + rounded + '% a ' + target + '% -ból)';
+        resultDisplay.classList.add('result-close');
+      } else {
+        resultDisplay.textContent = 'Nem sikerült. (' + rounded + '% a ' + target + '% -ból)';
+        resultDisplay.classList.add('result-lose');
+      }
+    }
+
+    function resetGame() {
+      locked      = false;
+      filling     = false;
+      fillPercent = 0;
+      cancelAnimationFrame(animFrame);
+      pourRect.setAttribute('height', 0);
+      handleBar.style.transform = '';
+      updateMug(0);
+      percentDisplay.textContent = '';
+      resultDisplay.textContent  = '';
+      resultDisplay.className    = '';
+      target = randomTarget();
+      document.getElementById('target-pct').textContent = target;
+    }
+
+    // Egér
+    document.getElementById('tap-hit').addEventListener('mousedown', startFill);
+    document.addEventListener('mouseup', stopFill);
+
+    // Érintő
+    document.getElementById('tap-hit').addEventListener('touchstart', e => {
+      e.preventDefault(); startFill();
+    }, { passive: false });
+    document.addEventListener('touchend', stopFill);
+
+    // Reset
+    document.getElementById('mug-hit').addEventListener('click', resetGame);
+    document.getElementById('reset-btn').addEventListener('click', resetGame);
+  </script>
+
+</body>
+</html>

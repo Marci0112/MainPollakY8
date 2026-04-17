@@ -106,7 +106,7 @@ i:hover {
 
 /* Játékok listája */
 
-a {
+.jatek {
   text-decoration: none;
   display: inline-block;
   transition:
@@ -114,11 +114,46 @@ a {
     box-shadow 0.3s ease;
   margin: 10px;
   border-radius: 15px;
+
+  position: relative;
+  overflow: hidden;
 }
 
-a:hover {
+.jatek:hover {
   transform: scale(1.1);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
+.jatek::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.0) 60%
+  );
+  opacity: 0;                        
+  transition: opacity 0.2s ease;
+}
+
+.jatek:hover::after {
+  opacity: 1;
+}
+
+.jatekNeve {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+
+.jatek:hover .jatekNeve {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 img {

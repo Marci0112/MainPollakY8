@@ -3,6 +3,7 @@ const game2048Routes = require("./2048");
 const towerBlocksRoutes = require("./tower_blocks");
 const pacManRoutes = require("./pac_man");
 const flappy_bird = require("./flappy_bird");
+const doodle_game = require("./doodle_game");
 
 module.exports = (app, db) => {
   app.use("/api/snake", snakeRoutes(db));
@@ -10,5 +11,5 @@ module.exports = (app, db) => {
   app.use("/api/tower_blocks", towerBlocksRoutes(db));
   app.use("/api/pac_man", pacManRoutes(db));
   app.use("/api/flappy_bird", flappy_bird(db));
-  // Új játék hozzáadásához: app.use("/api/ujjatek", ujjatekRoutes(db));
+  app.use("/api/doodle_game", doodle_game(db));
 };

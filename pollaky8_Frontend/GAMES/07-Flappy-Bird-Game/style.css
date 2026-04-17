@@ -13,7 +13,6 @@ canvas {
   margin: 10px;
 }
 
-
 .BackBtn i {
   position: absolute;
   top: 0;
@@ -21,4 +20,14 @@ canvas {
   color: black;
   font-size: 40px;
   margin: 10px;
+}
+#HUD {
+  display: flex;
+  color: white;
+  z-index: 999;
+  font-family: Arial;
+  font-size: 40px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  flex-direction: column;
+  justify-content: center;
 }

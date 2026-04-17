@@ -245,14 +245,14 @@ let lastGameMode = game_mode;
 setInterval(() => {
   if (lastGameMode === "running" && game_mode === "over") {
     currentScore = computeScore();
+  }
+  if (game_mode === "running") {
+    currentScore = computeScore();
     if (currentScore > personalBest) {
       personalBest = currentScore;
       personalBestEl.textContent = personalBest;
       savePersonalBest(personalBest);
     }
-  }
-  if (game_mode === "running") {
-    currentScore = computeScore();
     pointCounterEl.textContent = `Score: ${currentScore}`;
   }
   lastGameMode = game_mode;

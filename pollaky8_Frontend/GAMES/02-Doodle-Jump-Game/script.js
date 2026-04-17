@@ -18,6 +18,9 @@
       this.quadraticCurveTo(x, y, x + r, y);
     };
   }
+
+
+
   const scoreEl = document.getElementById("scoreEl");
   const highScoreEl = document.getElementById("highScoreEl");
   const startOverlay = document.getElementById("startOverlay");
@@ -48,7 +51,7 @@
   let cameraY = 0;
   let startCameraY = 0;
   let score = 0;
-  let highScore = parseInt(localStorage.getItem("doodle-high-score") || "0", 10);
+  let highScore = 0;
   let gameRunning = false;
   let keys = { left: false, right: false };
   let time = 0;
@@ -81,7 +84,8 @@
     let y = CANVAS_HEIGHT - 80;
     for (let i = 0; i < 10; i++) {
       const width =
-        PLATFORM_MIN_WIDTH + Math.random() * (PLATFORM_MAX_WIDTH - PLATFORM_MIN_WIDTH);
+        PLATFORM_MIN_WIDTH +
+        Math.random() * (PLATFORM_MAX_WIDTH - PLATFORM_MIN_WIDTH);
       let x = Math.random() * (CANVAS_WIDTH - width);
       let type = "normal";
       if (i === 0) {
@@ -92,16 +96,23 @@
         else if (typeRand < 0.35) type = "moving";
       }
       platforms.push(createPlatform(x, y, width, type));
-      y -= PLATFORM_GAP_MIN + Math.random() * (PLATFORM_GAP_MAX - PLATFORM_GAP_MIN);
+      y -=
+        PLATFORM_GAP_MIN +
+        Math.random() * (PLATFORM_GAP_MAX - PLATFORM_GAP_MIN);
     }
   }
 
   function addPlatformsAbove(topY) {
-    let lastY = platforms.length ? Math.min(...platforms.map((p) => p.y)) : topY;
+    let lastY = platforms.length
+      ? Math.min(...platforms.map((p) => p.y))
+      : topY;
     while (lastY > topY - CANVAS_HEIGHT - 200) {
-      lastY -= PLATFORM_GAP_MIN + Math.random() * (PLATFORM_GAP_MAX - PLATFORM_GAP_MIN);
+      lastY -=
+        PLATFORM_GAP_MIN +
+        Math.random() * (PLATFORM_GAP_MAX - PLATFORM_GAP_MIN);
       const width =
-        PLATFORM_MIN_WIDTH + Math.random() * (PLATFORM_MAX_WIDTH - PLATFORM_MIN_WIDTH);
+        PLATFORM_MIN_WIDTH +
+        Math.random() * (PLATFORM_MAX_WIDTH - PLATFORM_MIN_WIDTH);
       const x = Math.random() * (CANVAS_WIDTH - width);
       const typeRand = Math.random();
       let type = "normal";
@@ -197,6 +208,14 @@
     finalScoreEl.textContent = score;
     gameOverOverlay.classList.remove("hidden");
   }
+  // ===================== Personal best & score tracking =====================
+  const username = localStorage.getItem("username");
+  let personalBest = 0;
+  let currentScore = 0;
+
+  const pointCounterEl = document.getElementById("pointCounter");
+  const personalBestEl = document.getElementById("personalBestValue");
+
 
   function gameLoop() {
     if (!gameRunning) return;
@@ -215,7 +234,9 @@
     for (let i = platforms.length - 1; i >= 0; i--) {
       const p = platforms[i];
       if (p.type === "moving") {
-        p.x = p.startX + Math.sin((time + p.startX) * 0.03) * p.moveRange * p.moveDir;
+        p.x =
+          p.startX +
+          Math.sin((time + p.startX) * 0.03) * p.moveRange * p.moveDir;
         p.x = Math.max(0, Math.min(CANVAS_WIDTH - p.width, p.x));
       }
 
@@ -251,7 +272,7 @@
         if (score > highScore) {
           highScore = score;
           highScoreEl.textContent = highScore;
-          localStorage.setItem("doodle-high-score", String(highScore));
+          savePersonalBest(highScore);
         }
       }
       addPlatformsAbove(cameraY);
@@ -281,14 +302,18 @@
   restartBtn.addEventListener("click", startGame);
 
   document.addEventListener("keydown", function (e) {
-    if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.left = true;
-    if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.right = true;
+    if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A")
+      keys.left = true;
+    if (e.key === "ArrowRight" || e.key === "d" || e.key === "D")
+      keys.right = true;
     if (e.key === " ") e.preventDefault();
   });
 
   document.addEventListener("keyup", function (e) {
-    if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.left = false;
-    if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.right = false;
+    if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A")
+      keys.left = false;
+    if (e.key === "ArrowRight" || e.key === "d" || e.key === "D")
+      keys.right = false;
   });
 
   function setKeyLeft(value) {
@@ -304,16 +329,24 @@
       e.preventDefault();
       setKeyLeft(true);
     });
-    btnLeft.addEventListener("pointerup", function () { setKeyLeft(false); });
-    btnLeft.addEventListener("pointerleave", function () { setKeyLeft(false); });
+    btnLeft.addEventListener("pointerup", function () {
+      setKeyLeft(false);
+    });
+    btnLeft.addEventListener("pointerleave", function () {
+      setKeyLeft(false);
+    });
   }
   if (btnRight) {
     btnRight.addEventListener("pointerdown", function (e) {
       e.preventDefault();
       setKeyRight(true);
     });
-    btnRight.addEventListener("pointerup", function () { setKeyRight(false); });
-    btnRight.addEventListener("pointerleave", function () { setKeyRight(false); });
+    btnRight.addEventListener("pointerup", function () {
+      setKeyRight(false);
+    });
+    btnRight.addEventListener("pointerleave", function () {
+      setKeyRight(false);
+    });
   }
 
   canvas.addEventListener("click", function () {

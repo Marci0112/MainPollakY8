@@ -33,6 +33,7 @@ INSERT OR IGNORE INTO "jatek" ("id", "jatek neve") VALUES (2, 'game_2048');
 INSERT OR IGNORE INTO "jatek" ("id", "jatek neve") VALUES (3, 'tower_blocks');
 INSERT OR IGNORE INTO "jatek" ("id", "jatek neve") VALUES (4, 'pac_man');
 INSERT OR IGNORE INTO "jatek" ("id", "jatek neve") VALUES (5, 'flappy_bird');
+INSERT OR IGNORE INTO "jatek" ("id", "jatek neve") VALUES (6, 'doodle_game');
 
 -- --------------------------------------------------------
 -- Tábla: szemelyek

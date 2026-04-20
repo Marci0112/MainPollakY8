@@ -211,10 +211,6 @@
   // ===================== Personal best & score tracking =====================
   const username = localStorage.getItem("username");
   let personalBest = 0;
-  let currentScore = 0;
-
-  const pointCounterEl = document.getElementById("pointCounter");
-  const personalBestEl = document.getElementById("personalBestValue");
 
   async function loadPersonalBest() {
   if (!username) return;
@@ -223,15 +219,15 @@
   );
   const data = await res.json();
   personalBest = data.doodle_game_points || 0;
-  personalBestEl.textContent = personalBest;
+  highScoreEl.textContent = personalBest;
 }
 
 async function savePersonalBest(points) {
   if (!username) return;
-  await fetch("http://localhost:5000/api/flappy_bird/points", {
+  await fetch("http://localhost:5000/api/doodle_game/points", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, flappy_bird_points: points }),
+    body: JSON.stringify({ username, doodle_game_points: points }),
   });
 }
 
@@ -290,6 +286,7 @@ async function savePersonalBest(points) {
         if (score > highScore) {
           highScore = score;
           highScoreEl.textContent = highScore;
+          savePersonalBest(highScore);
         }
       }
       addPlatformsAbove(cameraY);
@@ -374,4 +371,5 @@ async function savePersonalBest(points) {
   window.addEventListener("resize", setPixelRatio);
   setPixelRatio();
   highScoreEl.textContent = highScore;
+  loadPersonalBest();
 })();

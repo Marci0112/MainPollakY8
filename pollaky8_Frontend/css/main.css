@@ -19,6 +19,12 @@ body {
   font-size: 40px;
   font-family: "Pixelify Sans";
   text-shadow: 5px 3px #000000;
+  cursor: default;
+  transition: 0.5s ease-in-out;
+}
+.cim:hover {
+  color: #ace5ff;
+  transition: 0.5s ease-in-out;
 }
 
 /* Felhasználói info */
@@ -35,6 +41,7 @@ body {
 #welcomeText {
   text-shadow: 1px 1px #000000;
   padding-right: 40px;
+  cursor: default;
 }
 #userResz {
   display: flex;
@@ -61,7 +68,7 @@ body {
   left: auto;
   border-radius: 10px;
   margin-top: 15px;
-  background-color: #a8eefa;
+  background-color: #a1e1ff;
   border: 1.8px solid #58aebd;
   min-width: 100px;
   box-shadow:
@@ -135,6 +142,7 @@ i:hover {
   );
   opacity: 0;                        
   transition: opacity 0.2s ease;
+  pointer-events: none;
 }
 
 .jatek:hover::after {

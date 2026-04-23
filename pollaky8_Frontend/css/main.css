@@ -16,16 +16,36 @@ body {
 
 .cim {
   color: white;
-  font-size: 40px;
+  font-size: 50px;
   font-family: "Pixelify Sans";
-  text-shadow: 5px 3px #000000;
   cursor: default;
-  transition: 0.5s ease-in-out;
 }
-.cim:hover {
-  color: #ace5ff;
-  transition: 0.5s ease-in-out;
+
+#neon-text {
+  animation: glow 5s infinite;
 }
+
+@keyframes glow {
+  0% {
+      text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 80px #ff0000;
+  }
+  20% {
+    text-shadow: 0 0 5px #eeff00, 0 0 10px #eeff00, 0 0 20px #eeff00, 0 0 40px #eeff00, 0 0 80px #eeff00;
+  }
+  40% {
+    text-shadow: 0 0 5px #09ff00, 0 0 10px #09ff00, 0 0 20px #09ff00, 0 0 40px #09ff00, 0 0 80px #09ff00;
+  }
+  60% {
+    text-shadow: 0 0 5px #0084ff, 0 0 10px #0084ff, 0 0 20px #0084ff, 0 0 40px #0084ff, 0 0 80px #0084ff;
+  }
+  80% {
+    text-shadow: 0 0 5px #c300ff, 0 0 10px #c300ff, 0 0 20px #c300ff, 0 0 40px #c300ff, 0 0 80px #c300ff;
+  }
+  100% {
+      text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000, 0 0 40px #ff0000, 0 0 80px #ff0000, 0 0 160px #ff0000;
+  }
+}
+
 
 /* Felhasználói info */
 .user-info {

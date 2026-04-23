@@ -261,6 +261,7 @@ function updateUI() {
   if (score > displayedBest) {
     displayedBest = score;
     personalBestEl.textContent = score;
+    savePersonalBest(score)
   }
 }
 
@@ -329,7 +330,6 @@ function movePacman(deltaSeconds) {
 
     if (pelletsRemaining <= 0) {
       gameOver = true;
-      savePersonalBest(score);
       setTimeout(() => alert("You cleared the maze! 🎉"), 100);
     }
   }

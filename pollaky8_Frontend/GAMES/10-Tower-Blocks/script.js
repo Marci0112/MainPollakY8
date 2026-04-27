@@ -462,6 +462,8 @@ var Game = /** @class */ (function () {
     }
 
     this.scoreContainer.innerHTML = String(this.blocks.length - 1);
+    const currentScore = this.blocks.length - 1;
+    this.savePersonalBest(currentScore)
 
     var newKidOnTheBlock = new Block(lastBlock);
     this.newBlocks.add(newKidOnTheBlock.mesh);
@@ -472,8 +474,7 @@ var Game = /** @class */ (function () {
   };
 
   Game.prototype.endGame = function () {
-    const currentScore = this.blocks.length - 2;
-    this.savePersonalBest(currentScore);   // ← DB-be menti (ha jobb)
+    // this.savePersonalBest(currentScore);   // ← DB-be menti (ha jobb)
     this.updateState(this.STATES.ENDED);
   };
 
